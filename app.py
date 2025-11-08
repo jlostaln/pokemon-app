@@ -1,16 +1,54 @@
 import sqlite3
-from flask import Flask
+from flask import Flask, abort
 from flask import render_template, request, redirect, session 
 from werkzeug.security import generate_password_hash, check_password_hash
+import urllib.request
+import json
 import config
 import db
 
 app = Flask(__name__)
+
+class Cfg:
+    next_locations_url = None
+    previous_locations_url = None
+    poke_cache = {}
+
+cfg = Cfg()
 app.secret_key = config.secret_key
+base_url = "https://pokeapi.co/api/v2"
 
 @app.route("/")
 def index():
     return render_template("index.html")
+
+@app.route("/location-area/")
+def redirect_to_start():
+    return redirect("/location-area/start")
+
+@app.route("/location-area/<string:direction>")
+def get_location_areas(direction):
+
+    if direction == "next" and cfg.next_locations_url:
+        url = cfg.next_locations_url
+    elif direction == "previous" and cfg.previous_locations_url:
+        url = cfg.previous_locations_url
+    elif direction == "start":
+        url = base_url + "/location-area/"
+    else:
+        abort(404)
+
+    if url in cfg.poke_cache:
+        data = cfg.poke_cache[url]
+    else:
+        with urllib.request.urlopen(url, timeout=5) as response:
+            data = response.read()
+            cfg.poke_cache[url] = data
+
+    locations_data = json.loads(data)
+    cfg.next_locations_url = locations_data["next"]
+    cfg.previous_locations_url = locations_data["previous"]
+    return render_template("location-areas.html", areas=locations_data["results"], cfg=cfg)
 
 @app.route("/register")
 def register():

@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Alueet</title>
+</head>
+
+<body>
+  <h2>Alueet</h2>
+
+  <p>
+    <a href="/location-area">Etsi pokémoneja</a>
+  </p>
+
+  <div class="navigation">
+  {% if cfg.previous_locations_url %}
+    <a href="/location-area/previous">Edellinen</a>
+  {% endif %}
+  {% if cfg.next_locations_url %}
+    <a href="/location-area/next">Seuraava</a>
+  {% endif %}
+  </div>
+
+  {% for area in areas %}
+  <div class="area">
+    <p>{{ area.name }}</p> <br />
+  </div>
+  {% endfor %}
+</body>
+
+</html>
