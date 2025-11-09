@@ -6,15 +6,16 @@ import urllib.request
 import json
 import config
 import db
+import pokecache
 
 app = Flask(__name__)
 
 class Cfg:
     next_locations_url = None
     previous_locations_url = None
-    poke_cache = {}
 
 cfg = Cfg()
+cache = pokecache.Cache()
 app.secret_key = config.secret_key
 base_url = "https://pokeapi.co/api/v2"
 
@@ -38,12 +39,11 @@ def get_location_areas(direction):
     else:
         abort(404)
 
-    if url in cfg.poke_cache:
-        data = cfg.poke_cache[url]
-    else:
+    data = cache.get(url)
+    if not data:
         with urllib.request.urlopen(url, timeout=5) as response:
             data = response.read()
-            cfg.poke_cache[url] = data
+            cache.add(url, data)
 
     locations_data = json.loads(data)
     cfg.next_locations_url = locations_data["next"]
