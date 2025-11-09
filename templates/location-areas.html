@@ -13,10 +13,10 @@
   </p>
 
   <div class="navigation">
-  {% if cfg.previous_locations_url %}
+  {% if session["previous_locations_url"] %}
     <a href="/location-area/previous">Edellinen</a>
   {% endif %}
-  {% if cfg.next_locations_url %}
+  {% if session["next_locations_url"] %}
     <a href="/location-area/next">Seuraava</a>
   {% endif %}
   </div>

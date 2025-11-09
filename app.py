@@ -10,11 +10,6 @@ import pokecache
 
 app = Flask(__name__)
 
-class Cfg:
-    next_locations_url = None
-    previous_locations_url = None
-
-cfg = Cfg()
 cache = pokecache.Cache()
 app.secret_key = config.secret_key
 base_url = "https://pokeapi.co/api/v2"
@@ -30,10 +25,15 @@ def redirect_to_start():
 @app.route("/location-area/<string:direction>")
 def get_location_areas(direction):
 
-    if direction == "next" and cfg.next_locations_url:
-        url = cfg.next_locations_url
-    elif direction == "previous" and cfg.previous_locations_url:
-        url = cfg.previous_locations_url
+    if 'next_locations_url' not in session:
+        session['next_locations_url'] = None
+    if 'previous_locations_url' not in session:
+        session['previous_locations_url'] = None
+
+    if direction == "next" and session["next_locations_url"]:
+        url = session["next_locations_url"]
+    elif direction == "previous" and session["previous_locations_url"]:
+        url = session["previous_locations_url"]
     elif direction == "start":
         url = base_url + "/location-area/"
     else:
@@ -46,9 +46,9 @@ def get_location_areas(direction):
             cache.add(url, data)
 
     locations_data = json.loads(data)
-    cfg.next_locations_url = locations_data["next"]
-    cfg.previous_locations_url = locations_data["previous"]
-    return render_template("location-areas.html", areas=locations_data["results"], cfg=cfg)
+    session["next_locations_url"] = locations_data["next"]
+    session["previous_locations_url"] = locations_data["previous"]
+    return render_template("location-areas.html", areas=locations_data["results"])
 
 @app.route("/register")
 def register():
