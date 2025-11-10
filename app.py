@@ -2,17 +2,15 @@ import sqlite3
 from flask import Flask, abort
 from flask import render_template, request, redirect, session 
 from werkzeug.security import generate_password_hash, check_password_hash
-import urllib.request
-import json
 import config
 import db
-import pokecache
+import pokeapi
 
 app = Flask(__name__)
 
 app.secret_key = config.secret_key
 base_url = config.BASE_URL
-cache = pokecache.Cache()
+api = pokeapi.PokeApi()
 
 @app.route("/")
 def index():
@@ -38,30 +36,19 @@ def get_location_areas(direction):
     else:
         abort(404)
 
-    data = cache.get(url)
-    if not data:
-        with urllib.request.urlopen(url, timeout=5) as response:
-            data = response.read()
-            cache.add(url, data)
+    result = api.get_location_areas(url)
+    areas = result[0]
+    session["next_locations_url"] = result[1]
+    session["previous_locations_url"] = result[2]
 
-    locations_data = json.loads(data)
-    session["next_locations_url"] = locations_data["next"]
-    session["previous_locations_url"] = locations_data["previous"]
-    return render_template("location-areas.html", areas=locations_data["results"])
+    return render_template("location-areas.html", areas=areas)
 
 @app.route("/location-details/<string:area_name>")
 def get_location_details(area_name):
     url = base_url + "/location-area/" + area_name
+    encounters = api.get_encounters(url)
 
-    data = cache.get(url)
-    if not data:
-        with urllib.request.urlopen(url, timeout=5) as response:
-            data = response.read()
-            cache.add(url, data)
-
-    location_details = json.loads(data)
-
-    return render_template("encounters.html", encounters=location_details["pokemon_encounters"])
+    return render_template("encounters.html", encounters=encounters)
 
 @app.route("/register")
 def register():
