@@ -9,15 +9,14 @@
   <h2>Alueen pokémonit</h2>
 
   <p>
-    <a href="/location-area">Etsi pokémoneja</a>
+    <a href="/location-area/">Etsi pokémoneja</a>
   </p>
 
   <div class="navigation">
-  {% if session["previous_locations_url"] %}
-    <a href="/location-area/previous">Edellinen</a>
-  {% endif %}
-  {% if session["next_locations_url"] %}
-    <a href="/location-area/next">Seuraava</a>
+  {% if session["current_locations_url"] %}
+    <a href="/location-area/current">Takaisin</a>
+  {% else %}
+    <a href="/location-area/">Takaisin</a>
   {% endif %}
   </div>
 

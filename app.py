@@ -9,7 +9,6 @@ import pokeapi
 app = Flask(__name__)
 
 app.secret_key = config.secret_key
-base_url = config.BASE_URL
 api = pokeapi.PokeApi()
 
 @app.route("/")
@@ -22,32 +21,29 @@ def redirect_to_start():
 
 @app.route("/location-area/<string:direction>")
 def get_location_areas(direction):
-    if 'next_locations_url' not in session:
-        session['next_locations_url'] = None
-    if 'previous_locations_url' not in session:
-        session['previous_locations_url'] = None
+    session.setdefault("next_locations_url", None)
+    session.setdefault("previous_locations_url", None)
+    session.setdefault("current_locations_url", None)
 
-    if direction == "next" and session["next_locations_url"]:
-        url = session["next_locations_url"]
-    elif direction == "previous" and session["previous_locations_url"]:
-        url = session["previous_locations_url"]
-    elif direction == "start":
-        url = base_url + "/location-area/"
-    else:
-        abort(404)
+    directions = {
+        "next": session["next_locations_url"],
+        "previous": session["previous_locations_url"],
+        "current": session["current_locations_url"],
+        "start": None
+    }
 
-    result = api.get_location_areas(url)
+    page_url = directions.get(direction)
+
+    result = api.get_location_areas(page_url)
     areas = result[0]
     session["next_locations_url"] = result[1]
     session["previous_locations_url"] = result[2]
-
+    session["current_locations_url"] = result[3]
     return render_template("location-areas.html", areas=areas)
 
 @app.route("/location-details/<string:area_name>")
 def get_location_details(area_name):
-    url = base_url + "/location-area/" + area_name
-    encounters = api.get_encounters(url)
-
+    encounters = api.get_encounters(area_name)
     return render_template("encounters.html", encounters=encounters)
 
 @app.route("/register")
