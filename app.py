@@ -10,9 +10,9 @@ import pokecache
 
 app = Flask(__name__)
 
-cache = pokecache.Cache()
 app.secret_key = config.secret_key
-base_url = "https://pokeapi.co/api/v2"
+base_url = config.BASE_URL
+cache = pokecache.Cache()
 
 @app.route("/")
 def index():
@@ -24,7 +24,6 @@ def redirect_to_start():
 
 @app.route("/location-area/<string:direction>")
 def get_location_areas(direction):
-
     if 'next_locations_url' not in session:
         session['next_locations_url'] = None
     if 'previous_locations_url' not in session:
@@ -49,6 +48,20 @@ def get_location_areas(direction):
     session["next_locations_url"] = locations_data["next"]
     session["previous_locations_url"] = locations_data["previous"]
     return render_template("location-areas.html", areas=locations_data["results"])
+
+@app.route("/location-details/<string:area_name>")
+def get_location_details(area_name):
+    url = base_url + "/location-area/" + area_name
+
+    data = cache.get(url)
+    if not data:
+        with urllib.request.urlopen(url, timeout=5) as response:
+            data = response.read()
+            cache.add(url, data)
+
+    location_details = json.loads(data)
+
+    return render_template("encounters.html", encounters=location_details["pokemon_encounters"])
 
 @app.route("/register")
 def register():

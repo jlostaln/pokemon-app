@@ -2,11 +2,11 @@
 <html>
 
 <head>
-  <title>Alueet</title>
+  <title>Alueen pokémonit</title>
 </head>
 
 <body>
-  <h2>Alueet</h2>
+  <h2>Alueen pokémonit</h2>
 
   <p>
     <a href="/location-area">Etsi pokémoneja</a>
@@ -22,8 +22,8 @@
   </div>
 
   <ul>
-  {% for area in areas %}
-    <li><a href="/location-details/{{ area.name }}">{{ area.name }}</a></li>
+  {% for encounter in encounters %}
+    <li><a href="/location-details/{{ encounter }}">{{ encounter["pokemon"]["name"] }}</a></li>
   {% endfor %}
   </ul>
 </body>
