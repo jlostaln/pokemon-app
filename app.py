@@ -1,5 +1,5 @@
 import sqlite3
-from flask import Flask, abort
+from flask import Flask
 from flask import render_template, request, redirect, session 
 from werkzeug.security import generate_password_hash, check_password_hash
 import config
@@ -14,6 +14,11 @@ api = pokeapi.PokeApi()
 @app.route("/")
 def index():
     return render_template("index.html")
+
+@app.route("/inspect/<string:pokemon_name>")
+def inspect(pokemon_name):
+    pokemon = api.get_pokemon_details(pokemon_name)
+    return render_template("inspect.html", pokemon=pokemon)
 
 @app.route("/location-area/")
 def redirect_to_start():
@@ -34,15 +39,15 @@ def get_location_areas(direction):
 
     page_url = directions.get(direction)
 
-    result = api.get_location_areas(page_url)
-    areas = result[0]
-    session["next_locations_url"] = result[1]
-    session["previous_locations_url"] = result[2]
-    session["current_locations_url"] = result[3]
+    areas, next_url, previous_url, current_url = api.get_location_areas(page_url)
+    session["next_locations_url"] = next_url
+    session["previous_locations_url"] = previous_url
+    session["current_locations_url"] = current_url
     return render_template("location-areas.html", areas=areas)
 
-@app.route("/location-details/<string:area_name>")
-def get_location_details(area_name):
+@app.route("/encounters/<string:area_name>")
+def get_location_encounters(area_name):
+    session["current_area"] = area_name
     encounters = api.get_encounters(area_name)
     return render_template("encounters.html", encounters=encounters)
 

@@ -19,6 +19,13 @@ class PokeApi:
         return json.loads(data)
 
 
+    def get_pokemon_details(self, name):
+        url = self.base_url + "/pokemon/" + name
+        pokemon = self.get_data(url)
+
+        return pokemon
+
+
     def get_location_areas(self, page_url=None):
         url = self.base_url + "/location-area/"
         if page_url:

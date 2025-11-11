@@ -6,7 +6,7 @@
 </head>
 
 <body>
-  <h2>Alueen pokémonit</h2>
+    <h2>Alueen {{ session["current_area"] }} pokémonit</h2>
 
   <p>
     <a href="/location-area/">Etsi pokémoneja</a>
@@ -22,7 +22,7 @@
 
   <ul>
   {% for encounter in encounters %}
-    <li><a href="/location-details/{{ encounter }}">{{ encounter["pokemon"]["name"] }}</a></li>
+    <li><a href="/inspect/{{ encounter.pokemon.name }}">{{ encounter.pokemon.name }}</a></li>
   {% endfor %}
   </ul>
 </body>

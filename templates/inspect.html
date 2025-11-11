@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Pokémon</title>
+</head>
+
+<body>
+  <h2>Pokémon</h2>
+
+  <p>
+    <a href="/location-area/">Etsi pokémoneja</a>
+  </p>
+
+  <div class="navigation">
+  {% if session["current_area"] %}
+      <a href="/encounters/{{ session["current_area"] }}">Takaisin</a>
+  {% else %}
+    <a href="/location-area/">Takaisin</a>
+  {% endif %}
+  </div>
+
+  <div class="pokemon">
+    <ul>
+      <li>{{ pokemon.name }}</li>
+      <li>{{ pokemon.height }}</li>
+      <li>{{ pokemon.weight }}</li>
+    </ul>
+  </div>
+
+</body>
+
+</html>
