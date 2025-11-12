@@ -25,6 +25,37 @@ class PokeApi:
 
         return pokemon
 
+    def get_pokemon_additional_info(self, pokemon):
+        info = {}
+        species_url = pokemon["species"]["url"]
+        species = self.get_data(species_url)
+
+        for entry in species["flavor_text_entries"]:
+            if entry["language"]["name"] == "en":
+                info["flavor_text"] = entry["flavor_text"]
+                break
+
+        evolution_chain_url = species["evolution_chain"]["url"]
+        evolution_chain = self.get_data(evolution_chain_url)
+
+        def find_next_evolution(chain, name):
+            if chain["species"]["name"] == name:
+                if chain["evolves_to"]:
+                    return chain["evolves_to"][0]["species"]["name"]
+                else:
+                    return None
+            for evolution in chain["evolves_to"]:
+                result = find_next_evolution(evolution, name)
+                if result:
+                    return result
+            return None
+
+        name = pokemon["name"]
+        next_evolution = find_next_evolution(evolution_chain["chain"], name)
+        info["next_evolution"] = next_evolution
+
+        return info
+
 
     def get_location_areas(self, page_url=None):
         url = self.base_url + "/location-area/"

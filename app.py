@@ -18,6 +18,8 @@ def index():
 @app.route("/inspect/<string:pokemon_name>")
 def inspect(pokemon_name):
     pokemon = api.get_pokemon_details(pokemon_name)
+    additional_information = api.get_pokemon_additional_info(pokemon)
+    pokemon.update(additional_information)
     return render_template("inspect.html", pokemon=pokemon)
 
 @app.route("/location-area/")

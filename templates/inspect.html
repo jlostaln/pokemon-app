@@ -21,10 +21,30 @@
   </div>
 
   <div class="pokemon">
+    <img src="{{ pokemon.sprites.front_default }}" alt="Pokemon sprite">
+    <p>{{ pokemon.flavor_text }}</p>
     <ul>
-      <li>{{ pokemon.name }}</li>
-      <li>{{ pokemon.height }}</li>
-      <li>{{ pokemon.weight }}</li>
+      <li>Nimi: {{ pokemon.name }}</li>
+      <li>Pituus: {{ pokemon.height / 10 }}m</li>
+      <li>Paino: {{ pokemon.weight / 10 }}kg</li>
+      <li>Tyyppi:
+        <ul>
+          {% for type in pokemon.types %}
+          <li>{{ type.type.name }}</li>
+          {% endfor %}
+        </ul>
+      </li>
+      <li>Kokemuspisteet: {{ pokemon.base_experience }}</li>
+      <li>Tilastot:
+        <ul>
+          {% for stat in pokemon.stats %}
+            <li>{{ stat.stat.name }}: {{ stat.base_stat }}</li>
+          {% endfor %}
+        </ul>
+      </li>
+      {% if pokemon.next_evolution %}
+      <li>Seuraava muoto: {{ pokemon.next_evolution }}</li>
+      {% endif %}
     </ul>
   </div>
 
