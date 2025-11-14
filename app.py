@@ -5,6 +5,9 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import config
 import db
 import pokeapi
+import random
+import re
+import json
 
 app = Flask(__name__)
 
@@ -15,12 +18,50 @@ api = pokeapi.PokeApi()
 def index():
     return render_template("index.html")
 
+@app.route("/capture_pokemon/<string:pokemon_name>", methods=["POST"])
+def capture_pokemon(pokemon_name):
+    success = random.randint(0, 100) < 50
+    if success:
+        name = request.form["name"]
+        owner_id = session["user_id"]
+        height = request.form["height"]
+        weight = request.form["weight"]
+        base_experience = request.form["base_experience"]
+        next_evolution = request.form["next_evolution"]
+        flavor_text = request.form["flavor_text"]
+        flavor_text = re.sub(r'\s+', ' ', flavor_text)
+        flavor_text = re.sub(r'[^\x20-\x7E]', '', flavor_text)
+        sprite = request.form["sprite"]
+
+        # seuraavaksi TODO-listalla: stats ja types tallennus tietokantaan
+        stats = json.loads(request.form["stats"])
+        types = json.loads(request.form["types"])
+
+        try:
+            sql = '''
+                INSERT INTO pokemon
+                    (name, owner_id, height, weight, base_experience, next_evolution, flavor_text, sprite)
+                VALUES
+                    (?, ?, ?, ?, ?, ?, ?, ?)
+                '''
+            db.execute(sql, [name, owner_id, height, weight, base_experience, next_evolution, flavor_text, sprite])
+            pokemon_id = db.last_insert_id()
+
+        except sqlite3.IntegrityError:
+            return "VIRHE: tallennus pokemon-tauluun epäonnistui"
+
+        session["capture_result"] = f"{pokemon_name} napattu onnistuneesti!"
+    else:
+        session["capture_result"] = f"{pokemon_name} karkasi! Yritä uudelleen."
+    return redirect(f"/inspect/{pokemon_name}")
+
 @app.route("/inspect/<string:pokemon_name>")
 def inspect(pokemon_name):
     pokemon = api.get_pokemon_details(pokemon_name)
     additional_information = api.get_pokemon_additional_info(pokemon)
     pokemon.update(additional_information)
-    return render_template("inspect.html", pokemon=pokemon)
+    capture_result = session.pop("capture_result", None)
+    return render_template("inspect.html", pokemon=pokemon, capture_result=capture_result)
 
 @app.route("/location-area/")
 def redirect_to_start():
