@@ -1,4 +1,5 @@
 import urllib.request
+import re
 import json
 import pokecache
 import config
@@ -32,7 +33,9 @@ class PokeApi:
 
         for entry in species["flavor_text_entries"]:
             if entry["language"]["name"] == "en":
-                info["flavor_text"] = entry["flavor_text"]
+                flavor_text = re.sub(r'\s+', ' ', entry["flavor_text"])
+                flavor_text = re.sub(r'[^\x20-\x7E]', '', flavor_text)
+                info["flavor_text"] = flavor_text
                 break
 
         evolution_chain_url = species["evolution_chain"]["url"]

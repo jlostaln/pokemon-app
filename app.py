@@ -6,7 +6,6 @@ import config
 import db
 import pokeapi
 import random
-import re
 import json
 
 app = Flask(__name__)
@@ -29,30 +28,32 @@ def capture_pokemon(pokemon_name):
         base_experience = request.form["base_experience"]
         next_evolution = request.form["next_evolution"]
         flavor_text = request.form["flavor_text"]
-        flavor_text = re.sub(r'\s+', ' ', flavor_text)
-        flavor_text = re.sub(r'[^\x20-\x7E]', '', flavor_text)
         sprite = request.form["sprite"]
-
-        # seuraavaksi TODO-listalla: stats ja types tallennus tietokantaan
         stats = json.loads(request.form["stats"])
         types = json.loads(request.form["types"])
 
         try:
-            sql = '''
-                INSERT INTO pokemon
-                    (name, owner_id, height, weight, base_experience, next_evolution, flavor_text, sprite)
-                VALUES
-                    (?, ?, ?, ?, ?, ?, ?, ?)
-                '''
+            sql = '''INSERT INTO pokemon (name, owner_id, height, weight, base_experience, next_evolution, flavor_text, sprite)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)'''
             db.execute(sql, [name, owner_id, height, weight, base_experience, next_evolution, flavor_text, sprite])
             pokemon_id = db.last_insert_id()
+
+            for stat in stats:
+                sql = '''INSERT INTO pokemon_stats (pokemon_id, stat, value)
+                        VALUES (?, ?, ?)'''
+                db.execute(sql, [pokemon_id, stat["stat"]["name"], stat["base_stat"]])
+
+            for t in types:
+                sql = '''INSERT INTO pokemon_types (pokemon_id, type)
+                        VALUES (?, ?)'''
+                db.execute(sql, [pokemon_id, t["type"]["name"]])
 
         except sqlite3.IntegrityError:
             return "VIRHE: tallennus pokemon-tauluun epäonnistui"
 
-        session["capture_result"] = f"{pokemon_name} napattu onnistuneesti!"
+        session["capture_result"] = True
     else:
-        session["capture_result"] = f"{pokemon_name} karkasi! Yritä uudelleen."
+        session["capture_result"] = False
     return redirect(f"/inspect/{pokemon_name}")
 
 @app.route("/inspect/<string:pokemon_name>")
