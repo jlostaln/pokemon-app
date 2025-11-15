@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Pokémonin päivitys</title>
+</head>
+
+<body>
+  <h2>{{ pokemon.name }}</h2>
+
+  <p>
+    <a href="/location-area/">Etsi pokémoneja</a>
+  </p>
+
+  <div class="navigation">
+      <a href="/my_pokemon">Takaisin</a>
+  </div>
+
+  <div class="pokemon">
+    <img src="{{ pokemon.sprite }}" alt="{{ pokemon.name }} sprite">
+    <br />
+    <p>Nimi: {{ pokemon.name }}</p>
+    <form action="/my_pokemon/update/{{ pokemon.id }}" method="POST">
+      <label for="nickname">Lempinimi: {{ pokemon.nickname }} </label>
+      <input type="text" id="nickname" name="nickname" placeholder="Anna uusi lempinimi">
+
+      <p>Tyyppi: {{ pokemon.types }}</p>
+      <p>Seuraava muoto: {{ pokemon.next_evolution }}</p>
+      <p>{{ pokemon.flavor_text }}</p>
+      <p>Tilastot:</p>
+      <ul>
+        {% for stat in stats %}
+        <li>{{ stat.stat }}: {{ stat.value }}</li>
+        {% endfor %}
+
+        <li>
+          <input type="text" name="new_stat" placeholder="Tilaston nimi">:
+          <input type="text" name="new_stat_value" placeholder="Tilaston arvo">
+        </li>
+      </ul>
+     <button type="submit">Tallenna muutokset</button>
+  </div>
+
+
+</body>
+
+</html>

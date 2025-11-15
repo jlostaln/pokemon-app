@@ -34,7 +34,6 @@ class PokeApi:
         for entry in species["flavor_text_entries"]:
             if entry["language"]["name"] == "en":
                 flavor_text = re.sub(r'\s+', ' ', entry["flavor_text"])
-                flavor_text = re.sub(r'[^\x20-\x7E]', '', flavor_text)
                 info["flavor_text"] = flavor_text
                 break
 

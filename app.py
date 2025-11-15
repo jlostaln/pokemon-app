@@ -17,6 +17,66 @@ api = pokeapi.PokeApi()
 def index():
     return render_template("index.html")
 
+@app.route("/my_pokemon/")
+def my_pokemon():
+    owner_id = session["user_id"]
+    sql = '''SELECT pokemon.id,
+                    pokemon.name,
+                    pokemon.nickname,
+                    pokemon.flavor_text,
+                    pokemon.sprite,
+                    GROUP_CONCAT(pokemon_types.type, ', ') as types
+            FROM pokemon
+            LEFT JOIN pokemon_types
+                    ON pokemon.id = pokemon_types.pokemon_id
+            WHERE pokemon.owner_id = ?
+            GROUP BY pokemon.id
+            ORDER BY pokemon.id DESC'''
+    result = db.query(sql, [owner_id])
+    return render_template("/my_pokemon.html", pokemons=result)
+
+@app.route("/my_pokemon/edit_pokemon/<int:pokemon_id>")
+def edit_pokemon(pokemon_id):
+    sql = '''SELECT pokemon.id,
+                    pokemon.name,
+                    pokemon.flavor_text,
+                    pokemon.sprite,
+                    pokemon.nickname,
+                    pokemon.next_evolution,
+                    GROUP_CONCAT(pokemon_types.type, ', ') as types
+             FROM pokemon
+             LEFT JOIN pokemon_types
+                    ON pokemon.id = pokemon_types.pokemon_id
+             WHERE pokemon.id = ?
+             GROUP BY pokemon.id'''
+    pokemon = db.query(sql, [pokemon_id])[0]
+    sql = "SELECT stat, value FROM pokemon_stats WHERE pokemon_id = ?"
+    stats = db.query(sql, [pokemon_id])
+
+    return render_template("edit_pokemon.html", pokemon=pokemon, stats=stats)
+
+@app.route("/my_pokemon/update/<int:pokemon_id>", methods=["POST"])
+def update_pokemon(pokemon_id):
+    nickname = request.form.get("nickname")
+    new_stat = request.form.get("new_stat")
+    new_stat_value = request.form.get("new_stat_value")
+
+    if nickname is not None and nickname.strip() != "":
+        sql = "UPDATE pokemon SET nickname = ? WHERE id = ?"
+        db.execute(sql, [nickname, pokemon_id])
+
+    if new_stat and new_stat.strip() != "" and new_stat_value:
+        try:
+            new_stat_value = int(new_stat_value)
+        except ValueError:
+            print("Tilaston arvon oltava kokonaisluku!") # Pitää muuttaa flash():ksi devauksen edetessä
+            return redirect(f"/my_pokemon/edit_pokemon/{pokemon_id}")
+
+        sql = "INSERT INTO pokemon_stats (pokemon_id, stat, value) VALUES (?, ?, ?)"
+        db.execute(sql, [pokemon_id, new_stat, new_stat_value])
+
+    return redirect(f"/my_pokemon/edit_pokemon/{pokemon_id}")
+
 @app.route("/capture_pokemon/<string:pokemon_name>", methods=["POST"])
 def capture_pokemon(pokemon_name):
     success = random.randint(0, 100) < 50
@@ -141,6 +201,8 @@ def login():
                 return "VIRHE: väärä tunnus tai salasana"
         else:
             return "VIRHE: käyttäjätunnusta ei löytynyt"
+
+    return redirect("/")
 
 @app.route("/logout")
 def logout():

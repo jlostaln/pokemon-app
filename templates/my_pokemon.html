@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>OmaPokémon</title>
+</head>
+
+<body>
+  <h2>OmaPokémon</h2>
+
+  <p>
+    <a href="/location-area/">Etsi pokémoneja</a>
+  </p>
+
+  <div class="navigation">
+  {% if session["current_area"] %}
+      <a href="/encounters/{{ session["current_area"] }}">Takaisin</a>
+  {% else %}
+    <a href="/location-area/">Takaisin</a>
+  {% endif %}
+  </div>
+
+  {% for pokemon in pokemons %}
+  <div class="pokemon">
+    <img src="{{ pokemon.sprite }}" alt="{{ pokemon.name }} sprite">
+    <br />
+    <a href="/my_pokemon/edit_pokemon/{{ pokemon.id }}">Tutki tai kehitä</a>
+    <p>Nimi: {{ pokemon.name }}</p>
+    {% if pokemon.nickname %}
+      <p>Lempinimi: {{ pokemon.nickname }} </p>
+    {% endif %}
+    <p>Tyyppi: {{ pokemon.types }}</p>
+    <p>{{ pokemon.flavor_text }}</p>
+  </div>
+  {% endfor %}
+
+
+</body>
+
+</html>
