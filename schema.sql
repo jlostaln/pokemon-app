@@ -25,7 +25,8 @@ CREATE TABLE pokemon_stats (
   id INTEGER PRIMARY KEY,
   pokemon_id INTEGER REFERENCES pokemon(id) ON DELETE CASCADE,
   stat TEXT,
-  value TEXT
+  value TEXT,
+  is_base_stat INTEGER DEFAULT 0
 );
 
 CREATE TABLE pokemon_types (

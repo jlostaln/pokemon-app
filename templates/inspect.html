@@ -9,7 +9,9 @@
   <h2>Pokémon</h2>
 
   <p>
+    <a href="/">Etusivu</a>
     <a href="/location-area/">Etsi pokémoneja</a>
+    <a href="/my_pokemon">OmaPokémon</a>
   </p>
 
   <div class="navigation">
@@ -48,7 +50,9 @@
     </ul>
   </div>
 
-  <form action="/capture_pokemon/{{ pokemon.name }}" method="post">
+  <form action="/capture_pokemon/{{ pokemon.name }}"
+        method="post"
+        onsubmit="return confirm('Haluatko heittää Poképallon?');">
     <input type="hidden" name="name" value="{{ pokemon.name }}">
     <input type="hidden" name="height" value="{{ pokemon.height / 10 }}">
     <input type="hidden" name="weight" value="{{ pokemon.weight / 10 }}">

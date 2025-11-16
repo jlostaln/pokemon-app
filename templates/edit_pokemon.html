@@ -9,7 +9,9 @@
   <h2>{{ pokemon.name }}</h2>
 
   <p>
+    <a href="/">Etusivu</a>
     <a href="/location-area/">Etsi pokémoneja</a>
+    <a href="/my_pokemon">OmaPokémon</a>
   </p>
 
   <div class="navigation">
@@ -24,21 +26,39 @@
       <label for="nickname">Lempinimi: {{ pokemon.nickname }} </label>
       <input type="text" id="nickname" name="nickname" placeholder="Anna uusi lempinimi">
 
+
       <p>Tyyppi: {{ pokemon.types }}</p>
       <p>Seuraava muoto: {{ pokemon.next_evolution }}</p>
       <p>{{ pokemon.flavor_text }}</p>
-      <p>Tilastot:</p>
+      <p>Lisää uusi tilasto/kyky:</p>
       <ul>
-        {% for stat in stats %}
-        <li>{{ stat.stat }}: {{ stat.value }}</li>
-        {% endfor %}
-
         <li>
           <input type="text" name="new_stat" placeholder="Tilaston nimi">:
           <input type="text" name="new_stat_value" placeholder="Tilaston arvo">
         </li>
       </ul>
      <button type="submit">Tallenna muutokset</button>
+    </form>
+
+      <p>Tilastot:</p>
+      <ul>
+        {% for stat in stats %}
+        <li>{{ stat.stat }}: {{ stat.value }}
+          {% if stat.is_base_stat == 0 %}
+            <form action="/my_pokemon/delete_stat/{{ pokemon.id }}/{{ stat.id }}"
+                  method="POST"
+                  style="display:inline;">
+            <button type="submit">Poista</button>
+          </form>
+          {% endif %}
+        </li>
+        {% endfor %}
+
+    <form action="/my_pokemon/delete/{{ pokemon.id }}"
+          method="POST"
+          onsubmit="return confirm('Haluatko varmasti poistaa tämän Pokémonin?');">
+    <button type="submit" style="background-color:red; color:white; margin-top:20px">Poista Pokémon</button>
+    </form>
   </div>
 
 

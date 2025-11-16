@@ -50,7 +50,7 @@ def edit_pokemon(pokemon_id):
              WHERE pokemon.id = ?
              GROUP BY pokemon.id'''
     pokemon = db.query(sql, [pokemon_id])[0]
-    sql = "SELECT stat, value FROM pokemon_stats WHERE pokemon_id = ?"
+    sql = "SELECT id, stat, value, is_base_stat FROM pokemon_stats WHERE pokemon_id = ?"
     stats = db.query(sql, [pokemon_id])
 
     return render_template("edit_pokemon.html", pokemon=pokemon, stats=stats)
@@ -77,6 +77,18 @@ def update_pokemon(pokemon_id):
 
     return redirect(f"/my_pokemon/edit_pokemon/{pokemon_id}")
 
+@app.route("/my_pokemon/delete/<int:pokemon_id>", methods=["POST"])
+def delete_pokemon(pokemon_id):
+    sql = "DELETE FROM pokemon WHERE id = ?"
+    db.execute(sql, [pokemon_id])
+    return redirect("/my_pokemon/")
+
+@app.route("/my_pokemon/delete_stat/<int:pokemon_id>/<int:stat_id>", methods=["POST"])
+def delete_stat(pokemon_id, stat_id):
+    sql = "DELETE FROM pokemon_stats WHERE id = ? AND is_base_stat = 0"
+    db.execute(sql, [stat_id])
+    return redirect(f"/my_pokemon/edit_pokemon/{pokemon_id}")
+
 @app.route("/capture_pokemon/<string:pokemon_name>", methods=["POST"])
 def capture_pokemon(pokemon_name):
     success = random.randint(0, 100) < 50
@@ -90,6 +102,7 @@ def capture_pokemon(pokemon_name):
         flavor_text = request.form["flavor_text"]
         sprite = request.form["sprite"]
         stats = json.loads(request.form["stats"])
+        is_base_stat = 1
         types = json.loads(request.form["types"])
 
         try:
@@ -99,9 +112,9 @@ def capture_pokemon(pokemon_name):
             pokemon_id = db.last_insert_id()
 
             for stat in stats:
-                sql = '''INSERT INTO pokemon_stats (pokemon_id, stat, value)
-                        VALUES (?, ?, ?)'''
-                db.execute(sql, [pokemon_id, stat["stat"]["name"], stat["base_stat"]])
+                sql = '''INSERT INTO pokemon_stats (pokemon_id, stat, value, is_base_stat)
+                        VALUES (?, ?, ?, ?)'''
+                db.execute(sql, [pokemon_id, stat["stat"]["name"], stat["base_stat"], is_base_stat])
 
             for t in types:
                 sql = '''INSERT INTO pokemon_types (pokemon_id, type)
