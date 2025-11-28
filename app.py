@@ -1,9 +1,10 @@
 import sqlite3
 from flask import Flask
 from flask import render_template, request, redirect, session 
-from werkzeug.security import generate_password_hash, check_password_hash
+import users
 import config
 import db
+import pokemon
 import pokeapi
 import random
 import json
@@ -20,40 +21,14 @@ def index():
 @app.route("/my_pokemon/")
 def my_pokemon():
     owner_id = session["user_id"]
-    sql = '''SELECT pokemon.id,
-                    pokemon.name,
-                    pokemon.nickname,
-                    pokemon.flavor_text,
-                    pokemon.sprite,
-                    GROUP_CONCAT(pokemon_types.type, ', ') as types
-            FROM pokemon
-            LEFT JOIN pokemon_types
-                    ON pokemon.id = pokemon_types.pokemon_id
-            WHERE pokemon.owner_id = ?
-            GROUP BY pokemon.id
-            ORDER BY pokemon.id DESC'''
-    result = db.query(sql, [owner_id])
+    result = users.get_my_pokemon(owner_id)
     return render_template("/my_pokemon.html", pokemons=result)
 
 @app.route("/my_pokemon/edit_pokemon/<int:pokemon_id>")
 def edit_pokemon(pokemon_id):
-    sql = '''SELECT pokemon.id,
-                    pokemon.name,
-                    pokemon.flavor_text,
-                    pokemon.sprite,
-                    pokemon.nickname,
-                    pokemon.next_evolution,
-                    GROUP_CONCAT(pokemon_types.type, ', ') as types
-             FROM pokemon
-             LEFT JOIN pokemon_types
-                    ON pokemon.id = pokemon_types.pokemon_id
-             WHERE pokemon.id = ?
-             GROUP BY pokemon.id'''
-    pokemon = db.query(sql, [pokemon_id])[0]
-    sql = "SELECT id, stat, value, is_base_stat FROM pokemon_stats WHERE pokemon_id = ?"
-    stats = db.query(sql, [pokemon_id])
-
-    return render_template("edit_pokemon.html", pokemon=pokemon, stats=stats)
+    result = pokemon.get_pokemon_by_id(pokemon_id)
+    stats = pokemon.get_pokemon_stats(pokemon_id)
+    return render_template("edit_pokemon.html", pokemon=result, stats=stats)
 
 @app.route("/my_pokemon/update/<int:pokemon_id>", methods=["POST"])
 def update_pokemon(pokemon_id):
@@ -62,8 +37,7 @@ def update_pokemon(pokemon_id):
     new_stat_value = request.form.get("new_stat_value")
 
     if nickname is not None and nickname.strip() != "":
-        sql = "UPDATE pokemon SET nickname = ? WHERE id = ?"
-        db.execute(sql, [nickname, pokemon_id])
+        pokemon.set_nickname(nickname, pokemon_id)
 
     if new_stat and new_stat.strip() != "" and new_stat_value:
         try:
@@ -72,21 +46,17 @@ def update_pokemon(pokemon_id):
             print("Tilaston arvon oltava kokonaisluku!") # Pitää muuttaa flash():ksi devauksen edetessä
             return redirect(f"/my_pokemon/edit_pokemon/{pokemon_id}")
 
-        sql = "INSERT INTO pokemon_stats (pokemon_id, stat, value) VALUES (?, ?, ?)"
-        db.execute(sql, [pokemon_id, new_stat, new_stat_value])
-
+        pokemon.add_stat(pokemon_id, new_stat, new_stat_value)
     return redirect(f"/my_pokemon/edit_pokemon/{pokemon_id}")
 
 @app.route("/my_pokemon/delete/<int:pokemon_id>", methods=["POST"])
 def delete_pokemon(pokemon_id):
-    sql = "DELETE FROM pokemon WHERE id = ?"
-    db.execute(sql, [pokemon_id])
+    pokemon.remove_pokemon(pokemon_id)
     return redirect("/my_pokemon/")
 
 @app.route("/my_pokemon/delete_stat/<int:pokemon_id>/<int:stat_id>", methods=["POST"])
 def delete_stat(pokemon_id, stat_id):
-    sql = "DELETE FROM pokemon_stats WHERE id = ? AND is_base_stat = 0"
-    db.execute(sql, [stat_id])
+    pokemon.remove_stat(stat_id)
     return redirect(f"/my_pokemon/edit_pokemon/{pokemon_id}")
 
 @app.route("/capture_pokemon/<string:pokemon_name>", methods=["POST"])
@@ -106,23 +76,17 @@ def capture_pokemon(pokemon_name):
         types = json.loads(request.form["types"])
 
         try:
-            sql = '''INSERT INTO pokemon (name, owner_id, height, weight, base_experience, next_evolution, flavor_text, sprite)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)'''
-            db.execute(sql, [name, owner_id, height, weight, base_experience, next_evolution, flavor_text, sprite])
+            pokemon.add_pokemon(name, owner_id, height, weight, base_experience, next_evolution, flavor_text, sprite)
             pokemon_id = db.last_insert_id()
 
             for stat in stats:
-                sql = '''INSERT INTO pokemon_stats (pokemon_id, stat, value, is_base_stat)
-                        VALUES (?, ?, ?, ?)'''
-                db.execute(sql, [pokemon_id, stat["stat"]["name"], stat["base_stat"], is_base_stat])
+                pokemon.add_stat(pokemon_id, stat["stat"]["name"], stat["base_stat"], is_base_stat)
 
             for t in types:
-                sql = '''INSERT INTO pokemon_types (pokemon_id, type)
-                        VALUES (?, ?)'''
-                db.execute(sql, [pokemon_id, t["type"]["name"]])
+                pokemon.add_type(pokemon_id, t["type"]["name"])
 
-        except sqlite3.IntegrityError:
-            return "VIRHE: tallennus pokemon-tauluun epäonnistui"
+        except Exception as e:
+            return f"VIRHE: {e}"
 
         session["capture_result"] = True
     else:
@@ -181,11 +145,9 @@ def create():
     password2 = request.form["password2"]
     if password1 != password2:
         return "VIRHE: salasanat eivät ole samat"
-    password_hash = generate_password_hash(password1)
 
     try:
-        sql = "INSERT INTO users (username, password_hash) VALUES (?, ?)"
-        db.execute(sql, [username, password_hash])
+        users.create_user(username, password1)
     except sqlite3.IntegrityError:
         return "VIRHE: tunnus on jo varattu"
 
@@ -200,22 +162,14 @@ def login():
         username = request.form["username"]
         password = request.form["password"]
 
-        sql = "SELECT id, password_hash FROM users WHERE username = ?"
-        results = db.query(sql, [username])
-
-        if results:
-            result = results[0]
-            user_id = result["id"]
-            password_hash = result["password_hash"]
-
-            if check_password_hash(password_hash, password):
-                session["user_id"] = user_id
-                session["username"] = username
-                return redirect("/")
-            else:
-                return "VIRHE: väärä tunnus tai salasana"
+        user_id = users.check_login(username, password)
+        if user_id:
+            session["user_id"] = user_id
+            session["username"] = username
+            return redirect("/")
         else:
-            return "VIRHE: käyttäjätunnusta ei löytynyt"
+            print("VIRHE: väärä tunnus tai salasana") # flashiksi kehityksen edetessä
+            return redirect("/login")
 
     return redirect("/")
 
