@@ -132,6 +132,8 @@ def capture_pokemon(pokemon_name):
 @app.route("/inspect/<string:pokemon_name>")
 def inspect(pokemon_name):
     pokemon = api.get_pokemon_details(pokemon_name)
+    if pokemon is None:
+        return redirect(f'/encounters/{session["current_area"]}')
     additional_information = api.get_pokemon_additional_info(pokemon)
     pokemon.update(additional_information)
     capture_result = session.pop("capture_result", None)

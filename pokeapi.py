@@ -11,13 +11,17 @@ class PokeApi:
 
 
     def get_data(self, url):
-        data = self.cache.get(url)
-        if not data:
-            with urllib.request.urlopen(url, timeout=5) as response:
-                data = response.read()
-                self.cache.add(url, data)
+        try:
+            data = self.cache.get(url)
+            if not data:
+                with urllib.request.urlopen(url, timeout=5) as response:
+                    data = response.read()
+                    self.cache.add(url, data)
 
-        return json.loads(data)
+            return json.loads(data)
+        except Exception as e:
+            print(f"VIRHE kutsussa {url}: {e}")
+            return None
 
 
     def get_pokemon_details(self, name):
@@ -27,9 +31,13 @@ class PokeApi:
         return pokemon
 
     def get_pokemon_additional_info(self, pokemon):
+        if pokemon is None:
+            return None
         info = {}
         species_url = pokemon["species"]["url"]
         species = self.get_data(species_url)
+        if species is None:
+            return None
 
         for entry in species["flavor_text_entries"]:
             if entry["language"]["name"] == "en":
@@ -39,6 +47,8 @@ class PokeApi:
 
         evolution_chain_url = species["evolution_chain"]["url"]
         evolution_chain = self.get_data(evolution_chain_url)
+        if evolution_chain is None:
+            return info
 
         def find_next_evolution(chain, name):
             if chain["species"]["name"] == name:
@@ -65,6 +75,8 @@ class PokeApi:
             url = page_url
 
         locations_data = self.get_data(url)
+        if locations_data is None:
+            return None, None, None, url
 
         areas = locations_data["results"]
         next_url = locations_data["next"]
@@ -76,6 +88,8 @@ class PokeApi:
     def get_encounters(self, area_name):
         url = self.base_url + "/location-area/" + area_name
         encounters = self.get_data(url)
+        if encounters is None:
+            return None
 
         return encounters["pokemon_encounters"]
 
