@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Omat tilastot</title>
+</head>
+
+<body>
+  <h2>Omat tilastot</h2>
+
+  <p>
+    <a href="/">Etusivu</a>
+    <a href="/location-area/">Etsi pokémoneja</a>
+    <a href="/my_pokemon">OmaPokémon</a>
+  </p>
+
+  <div class="navigation">
+    <a href="/my_pokemon">Takaisin</a>
+  </div>
+
+  <div class="stats">
+    {% if count == 1 %}
+    <p>Sinä omistat yhden pokemonin.</p>
+    {% else %}
+    <p>Sinä omistat {{ count }} pokemonia.</p>
+    {% endif %}
+    {% if count > 0 %}
+    <p>Pokemonien määrä tyypeittäin:</p>
+    <ul>
+      {% for type in count_by_type %}
+        <li><a href="/my_pokemon/{{ type.type }}">{{ type.type }}</a>: {{ type.type_count}}</li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+  </div>
+
+</body>
+
+</html>

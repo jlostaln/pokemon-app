@@ -24,6 +24,20 @@ def my_pokemon():
     result = users.get_my_pokemon(owner_id)
     return render_template("/my_pokemon.html", pokemons=result)
 
+@app.route("/my_pokemon/<string:pokemon_type>")
+def my_pokemon_by_type(pokemon_type):
+    owner_id = session["user_id"]
+    result = users.get_my_pokemon_by_type(owner_id, pokemon_type)
+    return render_template("/my_pokemon.html", pokemons=result)
+
+@app.route("/my_pokemon/stats/")
+def my_pokemon_stats():
+    owner_id = session["user_id"]
+    count = users.get_pokemon_count(owner_id)[0]
+    count_by_type = users. get_pokemon_count_by_type(owner_id)
+    return render_template("/my_stats.html", count=count, count_by_type=count_by_type)
+
+
 @app.route("/my_pokemon/edit_pokemon/<int:pokemon_id>")
 def edit_pokemon(pokemon_id):
     result = pokemon.get_pokemon_by_id(pokemon_id)

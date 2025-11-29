@@ -12,11 +12,12 @@
     <a href="/">Etusivu</a>
     <a href="/location-area/">Etsi pokémoneja</a>
     <a href="/my_pokemon">OmaPokémon</a>
+    <a href="/my_pokemon/stats/">Omat tilastot</a>
   </p>
 
   <div class="navigation">
   {% if session["current_area"] %}
-      <a href="/encounters/{{ session["current_area"] }}">Takaisin</a>
+      <a href="/encounters/{{ session["current_area"] }}">Takaisin alueelle</a>
   {% else %}
     <a href="/location-area/">Takaisin</a>
   {% endif %}
