@@ -18,6 +18,12 @@ api = pokeapi.PokeApi()
 def index():
     return render_template("index.html")
 
+@app.route("/trading/")
+def view_trade_listings():
+    result = pokemon.get_listed_pokemon()
+    return render_template("/trading.html", pokemons=result)
+
+
 @app.route("/my_pokemon/")
 def my_pokemon():
     owner_id = session["user_id"]
