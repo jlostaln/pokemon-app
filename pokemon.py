@@ -25,6 +25,10 @@ def set_nickname(nickname, pokemon_id):
     sql = "UPDATE pokemon SET nickname = ? WHERE id = ?"
     db.execute(sql, [nickname, pokemon_id])
 
+def add_pokemon_status(pokemon_id, owner_id):
+    sql = "INSERT INTO pokemon_status (pokemon_id, owner_id) VALUES (?, ?)"
+    db.execute(sql, [pokemon_id, owner_id])
+
 def add_stat(pokemon_id, stat_name, stat_value, is_base_stat=0):
     sql = "INSERT INTO pokemon_stats (pokemon_id, stat, value, is_base_stat) VALUES (?, ?, ?, ?)"
     db.execute(sql, [pokemon_id, stat_name, stat_value, is_base_stat])
@@ -48,5 +52,16 @@ def remove_stat(stat_id):
     sql = "DELETE FROM pokemon_stats WHERE id = ? AND is_base_stat = 0"
     db.execute(sql, [stat_id])
 
+def get_all_statuses():
+    sql = "SELECT value FROM status ORDER BY id DESC"
+    statuses = db.query(sql)
+    return statuses
 
+def set_pokemon_status(status, status_id):
+    sql = "UPDATE pokemon_status SET value = ? WHERE id = ?"
+    db.execute(sql, [status, status_id])
 
+def get_pokemon_status(pokemon_id):
+    sql = "SELECT id, value FROM pokemon_status WHERE pokemon_id = ?"
+    status = db.query(sql, [pokemon_id])[0]
+    return status[0], status[1]

@@ -25,10 +25,13 @@ def get_my_pokemon(owner_id):
                     pokemon.nickname,
                     pokemon.flavor_text,
                     pokemon.sprite,
-                    GROUP_CONCAT(pokemon_types.type, ', ') as types
+                    GROUP_CONCAT(pokemon_types.type, ', ') as types,
+                    pokemon_status.value as status
             FROM pokemon
             LEFT JOIN pokemon_types
                     ON pokemon.id = pokemon_types.pokemon_id
+            LEFT JOIN pokemon_status
+                    ON pokemon.id = pokemon_status.pokemon_id
             WHERE pokemon.owner_id = ?
             GROUP BY pokemon.id
             ORDER BY pokemon.id DESC'''
@@ -41,10 +44,13 @@ def get_my_pokemon_by_type(owner_id, pokemon_type):
                     pokemon.nickname,
                     pokemon.flavor_text,
                     pokemon.sprite,
-                    GROUP_CONCAT(pokemon_types.type, ', ') as types
+                    GROUP_CONCAT(pokemon_types.type, ', ') as types,
+                    pokemon_status.value as status
             FROM pokemon
             LEFT JOIN pokemon_types
                     ON pokemon.id = pokemon_types.pokemon_id
+            LEFT JOIN pokemon_status
+                    ON pokemon.id = pokemon_status.pokemon_id
             WHERE pokemon.id in (SELECT pokemon.id
                                 FROM pokemon, pokemon_types
                                 WHERE pokemon.owner_id = ?

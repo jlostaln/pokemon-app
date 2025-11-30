@@ -7,6 +7,8 @@ CREATE TABLE IF NOT EXISTS users (
 DROP TABLE IF EXISTS pokemon;
 DROP TABLE IF EXISTS pokemon_stats;
 DROP TABLE IF EXISTS pokemon_types;
+DROP TABLE IF EXISTS pokemon_status;
+DROP TABLE IF EXISTS status;
 
 CREATE TABLE pokemon (
   id INTEGER PRIMARY KEY,
@@ -33,4 +35,16 @@ CREATE TABLE pokemon_types (
   id INTEGER PRIMARY KEY,
   pokemon_id INTEGER REFERENCES pokemon(id) ON DELETE CASCADE,
   type TEXT
+);
+
+CREATE TABLE status (
+  id INTEGER PRIMARY KEY,
+  value TEXT
+);
+
+CREATE TABLE pokemon_status (
+  id INTEGER PRIMARY KEY,
+  pokemon_id INTEGER REFERENCES pokemon(id) ON DELETE CASCADE,
+  owner_id INTEGER REFERENCES users(id),
+  value TEXT
 );

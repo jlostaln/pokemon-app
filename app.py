@@ -22,13 +22,24 @@ def index():
 def my_pokemon():
     owner_id = session["user_id"]
     result = users.get_my_pokemon(owner_id)
-    return render_template("/my_pokemon.html", pokemons=result)
+    statuses = pokemon.get_all_statuses()
+    return render_template("/my_pokemon.html", pokemons=result, statuses=statuses)
+
+@app.route("/my_pokemon/change_status/<int:pokemon_id>", methods=["POST"])
+def change_status(pokemon_id):
+    status = request.form.get("status")
+    status_id, pokemon_status = pokemon.get_pokemon_status(pokemon_id)
+    if status == pokemon_status:
+        return redirect(f"/my_pokemon#pokemon-{pokemon_id}")
+    pokemon.set_pokemon_status(status, status_id)
+    return redirect(f"/my_pokemon#pokemon-{pokemon_id}")
 
 @app.route("/my_pokemon/<string:pokemon_type>")
 def my_pokemon_by_type(pokemon_type):
     owner_id = session["user_id"]
     result = users.get_my_pokemon_by_type(owner_id, pokemon_type)
-    return render_template("/my_pokemon.html", pokemons=result)
+    statuses = pokemon.get_all_statuses()
+    return render_template("/my_pokemon.html", pokemons=result, statuses=statuses)
 
 @app.route("/my_pokemon/stats/")
 def my_pokemon_stats():
@@ -98,6 +109,8 @@ def capture_pokemon(pokemon_name):
 
             for t in types:
                 pokemon.add_type(pokemon_id, t["type"]["name"])
+
+            pokemon.add_pokemon_status(pokemon_id, owner_id)
 
         except Exception as e:
             return f"VIRHE: {e}"

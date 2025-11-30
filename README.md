@@ -10,7 +10,7 @@ Tämä sovellus käyttää PokeAPI-rajapintaa (https://pokeapi.co/docs/v2) tiedo
 * Käyttäjä pystyy kehittämään keräämiään pokemoneja.
 * Käyttäjä näkee sovelluksen muiden käyttäjien keräämät pokemonit.
 * Käyttäjä pystyy etsimään pokemoneja hakusanalla.
-* Sovelluksessa on käyttäjäsivut, jotka näyttävät tilastoja ja käyttäjän keräämät pokemonit.
+* Sovelluksessa on käyttäjäsivut, jotka näyttävät tilastoja ja käyttäjän keräämät pokemonit. ✅
 * Sovelluksessa on leaderboard, joka listaa käyttäjät ja lajittelee käyttäjät kerättyjen pokemonien perusteella.
 * Käyttäjä pystyy valitsemaan maksimissaan 6 keräämistään pokemoneista, jotka kulkevat pelaajan mukana.
 * Käyttäjä pystyy vaihtamaan pokemoneja toisen käyttäjän kanssa.
@@ -23,10 +23,11 @@ Asenna `flask`-kirjasto:
 $ pip install flask
 ```
 
-Luo tietokannan taulut:
+Luo tietokannan taulut ja lisää alkutiedot:
 
 ```
 $ sqlite3 database.db < schema.sql
+$ sqlite3 database.db < init.sql
 ```
 
 Voit käynnistää sovelluksen näin:
