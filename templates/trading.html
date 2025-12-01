@@ -14,6 +14,16 @@
     <a href="/my_pokemon">OmaPokémon</a>
   </p>
 
+  <form action="/trading/" method="get">
+    <p>
+      <label for="query">Hakusana</label>:
+      <input type="text" name="query" id="query" value="{{ query if query }}" placeholder="Nimi tai tyyppi...">
+    </p>
+    <input type="submit" value="Suodata">
+  </form>
+
+  <h3>Listatut</h3>
+
   {% for pokemon in pokemons %}
   <div class="pokemon">
       <h3>{{ pokemon.name }}</h3>
@@ -32,7 +42,6 @@
     <br/>
   </div>
   {% endfor %}
-
 
 </body>
 

@@ -20,9 +20,9 @@ def index():
 
 @app.route("/trading/")
 def view_trade_listings():
-    result = pokemon.get_listed_pokemon()
-    return render_template("/trading.html", pokemons=result)
-
+    query = request.args.get("query")
+    result = pokemon.get_listed_pokemon(query)
+    return render_template("/trading.html", pokemons=result, query=query)
 
 @app.route("/my_pokemon/")
 def my_pokemon():

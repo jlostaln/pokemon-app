@@ -21,7 +21,26 @@ def get_pokemon_stats(pokemon_id):
     stats = db.query(sql, [pokemon_id])
     return stats
 
-def get_listed_pokemon():
+def get_listed_pokemon(filter=None):
+    if not filter:
+        sql = '''SELECT pokemon.id,
+                        pokemon.owner_id,
+                        pokemon.name,
+                        pokemon.nickname,
+                        pokemon.flavor_text,
+                        pokemon.sprite,
+                        GROUP_CONCAT(pokemon_types.type, ', ') as types
+                FROM pokemon
+                LEFT JOIN pokemon_types
+                        ON pokemon.id = pokemon_types.pokemon_id
+                WHERE pokemon.id in ( SELECT pokemon_id
+                                    FROM pokemon_status
+                                    WHERE value = ?)
+                GROUP BY pokemon.id
+                ORDER BY pokemon.id DESC'''
+        result = db.query(sql, ['Listattu'])
+        return result
+
     sql = '''SELECT pokemon.id,
                     pokemon.owner_id,
                     pokemon.name,
@@ -35,9 +54,15 @@ def get_listed_pokemon():
             WHERE pokemon.id in ( SELECT pokemon_id
                                 FROM pokemon_status
                                 WHERE value = ?)
+            AND (pokemon.name LIKE ?
+                OR EXISTS ( SELECT 1
+                            FROM pokemon_types
+                            WHERE pokemon_types.pokemon_id = pokemon.id
+                            AND pokemon_types.type LIKE ?))
             GROUP BY pokemon.id
             ORDER BY pokemon.id DESC'''
-    result = db.query(sql, ['Listattu'])
+    like = "%" + filter + "%"
+    result = db.query(sql, ['Listattu', like, like])
     return result
 
 def set_nickname(nickname, pokemon_id):
