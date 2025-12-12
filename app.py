@@ -5,6 +5,7 @@ import users
 import config
 import db
 import pokemon
+import trades
 import pokeapi
 import random
 import json
@@ -17,6 +18,38 @@ api = pokeapi.PokeApi()
 @app.route("/")
 def index():
     return render_template("index.html")
+
+@app.route("/submit_request", methods=["POST"])
+def submit_trade():
+    target_pokemon_id = request.form.get("requested_pokemon_id")
+    offer_pokemon_ids = request.form.getlist("requester_pokemon_ids")
+    requester_id = session["user_id"]
+    target = pokemon.get_pokemon_by_id(target_pokemon_id)
+    offer_pokemon = []
+    for offer_id in offer_pokemon_ids:
+        offer_pokemon.append(pokemon.get_pokemon_by_id(offer_id))
+
+    try:
+        trades.add_trade_pending(requester_id, target["owner_id"])
+        trade_id = db.last_insert_id()
+        trades.add_trade_history(trade_id, "pending")
+        trades.add_pokemon(trade_id, target["id"], target["name"], "responder")
+        for offer in offer_pokemon:
+            trades.add_pokemon(trade_id, offer["id"], offer["name"], "requester")
+    except Exception as e:
+        return f"VIRHE: {e}"
+
+    requested_pokemon = pokemon.get_pokemon_by_id(target_pokemon_id)
+    requester_pokemon = users.get_my_pokemon(requester_id)
+    return render_template("trade_view.html", requested_pokemon=requested_pokemon, requester_pokemon=requester_pokemon)
+
+
+@app.route("/trading/<int:pokemon_id>")
+def trade_view(pokemon_id):
+    requester_id = session["user_id"]
+    requested_pokemon = pokemon.get_pokemon_by_id(pokemon_id)
+    requester_pokemon = users.get_my_pokemon(requester_id)
+    return render_template("trade_view.html", requested_pokemon=requested_pokemon, requester_pokemon=requester_pokemon)
 
 @app.route("/trading/")
 def view_trade_listings():

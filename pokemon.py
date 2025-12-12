@@ -3,6 +3,7 @@ import db
 def get_pokemon_by_id(pokemon_id):
     sql = '''SELECT pokemon.id,
                     pokemon.name,
+                    pokemon.owner_id,
                     pokemon.flavor_text,
                     pokemon.sprite,
                     pokemon.nickname,
@@ -24,12 +25,15 @@ def get_pokemon_stats(pokemon_id):
 def get_listed_pokemon(filter=None):
     sql = '''SELECT pokemon.id,
                     pokemon.owner_id,
+                    users.username,
                     pokemon.name,
                     pokemon.nickname,
                     pokemon.flavor_text,
                     pokemon.sprite,
                     GROUP_CONCAT(pokemon_types.type, ', ') as types
             FROM pokemon
+            JOIN users
+                    ON users.id = pokemon.owner_id
             LEFT JOIN pokemon_types
                     ON pokemon.id = pokemon_types.pokemon_id
             WHERE pokemon.id in ( SELECT pokemon_id

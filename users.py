@@ -21,6 +21,7 @@ def check_login(username, password):
 
 def get_my_pokemon(owner_id):
     sql = '''SELECT pokemon.id,
+                    pokemon.owner_id,
                     pokemon.name,
                     pokemon.nickname,
                     pokemon.flavor_text,

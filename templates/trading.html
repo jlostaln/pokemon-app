@@ -32,12 +32,17 @@
 
     <ul>
       <li>Nimi: {{ pokemon.name }}</li>
-      <li>Omistaja: {{ pokemon.owner_id }}</li>
+      <li>Omistaja: {{ pokemon.username }}</li>
       {% if pokemon.nickname %}
       <li>Lempinimi: {{ pokemon.nickname }} </li>
       {% endif %}
       <li>Tyyppi: {{ pokemon.types }}</li>
       <li>Kuvaus: {{ pokemon.flavor_text }}</li>
+      {% if session.user_id != pokemon.owner_id %}
+      <a href="/trading/{{ pokemon.id }}">Tee tarjous</a>
+      {% else %}
+      <p>Sinä omistat tämän pokemonin</p>
+      {% endif %}
     </ul>
     <br/>
   </div>
