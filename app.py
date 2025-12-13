@@ -19,6 +19,12 @@ api = pokeapi.PokeApi()
 def index():
     return render_template("index.html")
 
+@app.route("/my_trades")
+def my_trades():
+    user_id = session["user_id"]
+    transactions = trades.get_user_trades(user_id)
+    return render_template("my_trades.html", transactions=transactions)
+
 @app.route("/submit_request", methods=["POST"])
 def submit_trade():
     target_pokemon_id = request.form.get("requested_pokemon_id")
@@ -41,7 +47,7 @@ def submit_trade():
 
     requested_pokemon = pokemon.get_pokemon_by_id(target_pokemon_id)
     requester_pokemon = users.get_my_pokemon(requester_id)
-    return render_template("trade_view.html", requested_pokemon=requested_pokemon, requester_pokemon=requester_pokemon)
+    return render_template("create_proposal.html", requested_pokemon=requested_pokemon, requester_pokemon=requester_pokemon)
 
 
 @app.route("/trading/<int:pokemon_id>")
@@ -49,7 +55,7 @@ def trade_view(pokemon_id):
     requester_id = session["user_id"]
     requested_pokemon = pokemon.get_pokemon_by_id(pokemon_id)
     requester_pokemon = users.get_my_pokemon(requester_id)
-    return render_template("trade_view.html", requested_pokemon=requested_pokemon, requester_pokemon=requester_pokemon)
+    return render_template("create_proposal.html", requested_pokemon=requested_pokemon, requester_pokemon=requester_pokemon)
 
 @app.route("/trading/")
 def view_trade_listings():
