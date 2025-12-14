@@ -19,6 +19,22 @@ api = pokeapi.PokeApi()
 def index():
     return render_template("index.html")
 
+@app.route("/trade/<int:trade_id>/accept", methods=["POST"])
+def accept_trade(trade_id):
+    pokemon_ids = request.form.getlist("pokemon_ids")
+    requester_id = request.form["requester_id"]
+    responder_id = request.form["responder_id"]
+    trades.accept_trade(trade_id, requester_id, responder_id)
+    return redirect("/my_trades")
+
+@app.route("/trade/<int:trade_id>/reject", methods=["POST"])
+def reject_trade(trade_id):
+    return redirect("/")
+
+@app.route("/trade/<int:trade_id>/cancel", methods=["POST"])
+def cancel_trade(trade_id):
+    return redirect("/")
+
 @app.route("/my_trades")
 def my_trades():
     user_id = session["user_id"]
@@ -48,7 +64,6 @@ def submit_trade():
     requested_pokemon = pokemon.get_pokemon_by_id(target_pokemon_id)
     requester_pokemon = users.get_my_pokemon(requester_id)
     return render_template("create_proposal.html", requested_pokemon=requested_pokemon, requester_pokemon=requester_pokemon)
-
 
 @app.route("/trading/<int:pokemon_id>")
 def trade_view(pokemon_id):

@@ -27,3 +27,30 @@ def get_user_trades(user_id):
             WHERE trades.requester_id = ?
                     OR trades.responder_id = ?'''
     return db.query(sql, [user_id, user_id])
+
+def swap_owners(trade_id, requester_id, responder_id):
+    sql = '''UPDATE pokemon SET owner_id = ?
+            WHERE id IN (SELECT pokemon_id
+                        FROM trade_pokemon
+                        WHERE trade_id = ?
+                        AND side = 'responder')'''
+    db.execute(sql, [requester_id, trade_id])
+
+    sql = '''UPDATE pokemon
+            SET owner_id = ?
+            WHERE id IN (SELECT pokemon_id
+                        FROM trade_pokemon
+                        WHERE trade_id = ?
+                        AND side = 'requester')'''
+    db.execute(sql, [responder_id, trade_id])
+
+def set_trade_status(trade_id, status):
+    sql = "UPDATE trades SET status = ? WHERE id = ?"
+    db.execute(sql, [status, trade_id])
+
+def accept_trade(trade_id, requester_id, responder_id):
+    set_trade_status(trade_id, "accepted")
+    add_trade_history(trade_id, "accepted")
+    swap_owners(trade_id, requester_id, responder_id)
+    set_trade_status(trade_id, "completed")
+    add_trade_history(trade_id, "completed")

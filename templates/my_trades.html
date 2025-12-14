@@ -64,8 +64,13 @@
 
   {% if trade_rows[0].status == "pending" %}
     {% if session.user_id == trade_rows[0].responder_id %}
-      <form method="post" action="/trade/{{ trade_id }}/approve">
-        <button type="submit">Approve</button>
+      <form method="post" action="/trade/{{ trade_id }}/accept">
+        {% for row in trade_rows %}
+          <input type="hidden" name="pokemon_ids" value="{{ row.pokemon_id }}">
+        {% endfor %}
+        <input type="hidden" name="requester_id" value="{{ trade_rows[0].requester_id }}">
+        <input type="hidden" name="responder_id" value="{{ trade_rows[0].responder_id }}">
+        <button type="submit">Accept</button>
       </form>
       <form method="post" action="/trade/{{ trade_id }}/reject">
         <button type="submit">Reject</button>
