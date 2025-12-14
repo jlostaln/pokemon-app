@@ -12,7 +12,7 @@ def add_pokemon(trade_id, pokemon_id, pokemon_name, side):
     sql = "INSERT INTO trade_pokemon (trade_id, pokemon_id, pokemon_name, side) VALUES (?, ?, ?, ?)"
     db.execute(sql, [trade_id, pokemon_id, pokemon_name, side])
 
-def get_user_trades(user_id):
+def get_user_trades(user_id, filter=None):
     sql = '''SELECT trades.id as trade_id,
                     trades.requester_id,
                     trades.responder_id,
@@ -24,9 +24,16 @@ def get_user_trades(user_id):
             FROM trades
             JOIN trade_pokemon
                   ON trades.id = trade_pokemon.trade_id
-            WHERE trades.requester_id = ?
-                    OR trades.responder_id = ?'''
-    return db.query(sql, [user_id, user_id])
+            WHERE (trades.requester_id = ?
+                    OR trades.responder_id = ?)'''
+    params = [user_id, user_id]
+
+    if filter:
+        sql += '''AND trades.status LIKE ?'''
+        like = "%" + filter + "%"
+        params.extend([like])
+
+    return db.query(sql, params)
 
 def swap_owners(trade_id, requester_id, responder_id):
     sql = '''UPDATE pokemon SET owner_id = ?
@@ -36,8 +43,7 @@ def swap_owners(trade_id, requester_id, responder_id):
                         AND side = 'responder')'''
     db.execute(sql, [requester_id, trade_id])
 
-    sql = '''UPDATE pokemon
-            SET owner_id = ?
+    sql = '''UPDATE pokemon SET owner_id = ?
             WHERE id IN (SELECT pokemon_id
                         FROM trade_pokemon
                         WHERE trade_id = ?
@@ -54,3 +60,11 @@ def accept_trade(trade_id, requester_id, responder_id):
     swap_owners(trade_id, requester_id, responder_id)
     set_trade_status(trade_id, "completed")
     add_trade_history(trade_id, "completed")
+
+def reject_trade(trade_id):
+    set_trade_status(trade_id, "rejected")
+    add_trade_history(trade_id, "rejected")
+
+def cancel_trade(trade_id):
+    sql = "DELETE FROM trades WHERE id = ?"
+    db.execute(sql, [trade_id])

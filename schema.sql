@@ -48,7 +48,6 @@ CREATE TABLE status (
 CREATE TABLE pokemon_status (
   id INTEGER PRIMARY KEY,
   pokemon_id INTEGER REFERENCES pokemon(id) ON DELETE CASCADE,
-  owner_id INTEGER REFERENCES users(id),
   value TEXT
 );
 
@@ -56,7 +55,7 @@ CREATE TABLE trades (
   id INTEGER PRIMARY KEY,
   requester_id INTEGER REFERENCES users(id),
   responder_id INTEGER REFERENCES users(id),
-  status TEXT CHECK(status IN ('pending', 'cancelled', 'rejected', 'accepted', 'completed'))
+  status TEXT CHECK(status IN ('pending', 'rejected', 'accepted', 'completed'))
 );
 
 CREATE TABLE trade_pokemon (
@@ -70,6 +69,6 @@ CREATE TABLE trade_pokemon (
 CREATE TABLE trade_history (
   id INTEGER PRIMARY KEY,
   trade_id INTEGER REFERENCES trades(id) ON DELETE CASCADE,
-  status TEXT CHECK(status IN ('pending', 'cancelled', 'rejected', 'accepted', 'completed')),
+  status TEXT CHECK(status IN ('pending', 'rejected', 'accepted', 'completed')),
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );

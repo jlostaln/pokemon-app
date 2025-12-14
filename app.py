@@ -21,7 +21,6 @@ def index():
 
 @app.route("/trade/<int:trade_id>/accept", methods=["POST"])
 def accept_trade(trade_id):
-    pokemon_ids = request.form.getlist("pokemon_ids")
     requester_id = request.form["requester_id"]
     responder_id = request.form["responder_id"]
     trades.accept_trade(trade_id, requester_id, responder_id)
@@ -29,17 +28,20 @@ def accept_trade(trade_id):
 
 @app.route("/trade/<int:trade_id>/reject", methods=["POST"])
 def reject_trade(trade_id):
-    return redirect("/")
+    trades.reject_trade(trade_id)
+    return redirect("/my_trades")
 
 @app.route("/trade/<int:trade_id>/cancel", methods=["POST"])
 def cancel_trade(trade_id):
-    return redirect("/")
+    trades.cancel_trade(trade_id)
+    return redirect("/my_trades")
 
 @app.route("/my_trades")
 def my_trades():
     user_id = session["user_id"]
-    transactions = trades.get_user_trades(user_id)
-    return render_template("my_trades.html", transactions=transactions)
+    query = request.args.get("query")
+    transactions = trades.get_user_trades(user_id, query)
+    return render_template("my_trades.html", transactions=transactions, query=query)
 
 @app.route("/submit_request", methods=["POST"])
 def submit_trade():
@@ -60,10 +62,7 @@ def submit_trade():
             trades.add_pokemon(trade_id, offer["id"], offer["name"], "requester")
     except Exception as e:
         return f"VIRHE: {e}"
-
-    requested_pokemon = pokemon.get_pokemon_by_id(target_pokemon_id)
-    requester_pokemon = users.get_my_pokemon(requester_id)
-    return render_template("create_proposal.html", requested_pokemon=requested_pokemon, requester_pokemon=requester_pokemon)
+    return redirect("/my_trades")
 
 @app.route("/trading/<int:pokemon_id>")
 def trade_view(pokemon_id):
@@ -170,7 +169,7 @@ def capture_pokemon(pokemon_name):
             for t in types:
                 pokemon.add_type(pokemon_id, t["type"]["name"])
 
-            pokemon.add_pokemon_status(pokemon_id, owner_id)
+            pokemon.add_pokemon_status(pokemon_id)
 
         except Exception as e:
             return f"VIRHE: {e}"

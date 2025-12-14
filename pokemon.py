@@ -60,9 +60,9 @@ def set_nickname(nickname, pokemon_id):
     sql = "UPDATE pokemon SET nickname = ? WHERE id = ?"
     db.execute(sql, [nickname, pokemon_id])
 
-def add_pokemon_status(pokemon_id, owner_id):
-    sql = "INSERT INTO pokemon_status (pokemon_id, owner_id) VALUES (?, ?)"
-    db.execute(sql, [pokemon_id, owner_id])
+def add_pokemon_status(pokemon_id):
+    sql = "INSERT INTO pokemon_status (pokemon_id) VALUES (?)"
+    db.execute(sql, [pokemon_id])
 
 def add_stat(pokemon_id, stat_name, stat_value, is_base_stat=0):
     sql = "INSERT INTO pokemon_stats (pokemon_id, stat, value, is_base_stat) VALUES (?, ?, ?, ?)"
