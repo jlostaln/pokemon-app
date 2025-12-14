@@ -14,8 +14,8 @@ def get_pokemon_by_id(pokemon_id):
                     ON pokemon.id = pokemon_types.pokemon_id
              WHERE pokemon.id = ?
              GROUP BY pokemon.id'''
-    pokemon = db.query(sql, [pokemon_id])[0]
-    return pokemon
+    pokemon = db.query(sql, [pokemon_id])
+    return pokemon[0] if pokemon else None
 
 def get_pokemon_stats(pokemon_id):
     sql = "SELECT id, stat, value, is_base_stat FROM pokemon_stats WHERE pokemon_id = ?"
@@ -99,4 +99,4 @@ def set_pokemon_status(status, status_id):
 def get_pokemon_status(pokemon_id):
     sql = "SELECT id, value FROM pokemon_status WHERE pokemon_id = ?"
     status = db.query(sql, [pokemon_id])[0]
-    return status[0], status[1]
+    return status[0], status[1] if status else None

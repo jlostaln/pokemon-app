@@ -12,6 +12,16 @@ def add_pokemon(trade_id, pokemon_id, pokemon_name, side):
     sql = "INSERT INTO trade_pokemon (trade_id, pokemon_id, pokemon_name, side) VALUES (?, ?, ?, ?)"
     db.execute(sql, [trade_id, pokemon_id, pokemon_name, side])
 
+def get_trade(trade_id):
+    sql = '''SELECT trades.id,
+                    trades.requester_id,
+                    trades.responder_id,
+                    trades.status
+            FROM trades
+            WHERE trades.id = ?'''
+    trade = db.query(sql, [trade_id])
+    return trade[0] if trade else None
+
 def get_user_trades(user_id, filter=None):
     sql = '''SELECT trades.id as trade_id,
                     trades.requester_id,
