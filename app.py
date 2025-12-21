@@ -165,14 +165,20 @@ def update_pokemon(pokemon_id):
     new_stat = request.form.get("new_stat")
     new_stat_value = request.form.get("new_stat_value")
 
-    if nickname is not None and nickname.strip() != "":
+    if nickname and nickname.strip():
+        if len(nickname) > 20:
+            abort(403)
         pokemon.set_nickname(nickname, pokemon_id)
 
     if new_stat and new_stat.strip() != "" and new_stat_value:
+        if len(new_stat) > 20:
+            abort(403)
         try:
             new_stat_value = int(new_stat_value)
+            if new_stat_value > 200:
+                raise ValueError
         except ValueError:
-            print("Tilaston arvon oltava kokonaisluku!") # Pitää muuttaa flash():ksi devauksen edetessä
+            print("Tilaston arvon oltava kokonaisluku ja enintään 200!") # Pitää muuttaa flash():ksi devauksen edetessä
             return redirect(f"/my_pokemon/edit_pokemon/{pokemon_id}")
 
         pokemon.add_stat(pokemon_id, new_stat, new_stat_value)
