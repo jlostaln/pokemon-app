@@ -20,12 +20,12 @@
   </div>
 
   <div class="stats">
-    {% if count == 1 %}
+    {% if count.total_count == 1 %}
     <p>Sinä omistat yhden pokemonin.</p>
     {% else %}
-    <p>Sinä omistat {{ count }} pokemonia.</p>
+    <p>Sinä omistat {{ count.total_count }} pokemonia.</p>
     {% endif %}
-    {% if count > 0 %}
+    {% if count.total_count > 0 %}
     <p>Pokemonien määrä tyypeittäin:</p>
     <ul>
       {% for type in count_by_type %}

@@ -98,5 +98,5 @@ def set_pokemon_status(status, status_id):
 
 def get_pokemon_status(pokemon_id):
     sql = "SELECT id, value FROM pokemon_status WHERE pokemon_id = ?"
-    status = db.query(sql, [pokemon_id])[0]
-    return status[0], status[1] if status else None
+    status = db.query(sql, [pokemon_id])
+    return status[0][0], status[0][1] if status else None

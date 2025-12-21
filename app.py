@@ -19,6 +19,15 @@ def require_login():
     if "user_id" not in session:
         abort(403)
 
+def check_access(owner_id):
+    if owner_id != session["user_id"]:
+        abort(403)
+
+def handle_none(obj):
+    if not obj:
+       abort(404)
+    return obj
+
 @app.route("/")
 def index():
     return render_template("index.html")
@@ -26,11 +35,8 @@ def index():
 @app.route("/trade/<int:trade_id>/accept", methods=["POST"])
 def accept_trade(trade_id):
     require_login()
-    trade = trades.get_trade(trade_id)
-    if not trade:
-        abort(404)
-    if trade["responder_id"] != session["user_id"]:
-        abort(403)
+    trade = handle_none(trades.get_trade(trade_id))
+    check_access(trade["responder_id"])
     requester_id = trade["requester_id"]
     responder_id = trade["responder_id"]
     trades.accept_trade(trade_id, requester_id, responder_id)
@@ -39,22 +45,16 @@ def accept_trade(trade_id):
 @app.route("/trade/<int:trade_id>/reject", methods=["POST"])
 def reject_trade(trade_id):
     require_login()
-    trade = trades.get_trade(trade_id)
-    if not trade:
-        abort(404)
-    if trade["responder_id"] != session["user_id"]:
-        abort(403)
+    trade = handle_none(trades.get_trade(trade_id))
+    check_access(trade["responder_id"])
     trades.reject_trade(trade_id)
     return redirect("/my_trades")
 
 @app.route("/trade/<int:trade_id>/cancel", methods=["POST"])
 def cancel_trade(trade_id):
     require_login()
-    trade = trades.get_trade(trade_id)
-    if not trade:
-        abort(404)
-    if trade["requester_id"] != session["user_id"]:
-        abort(403)
+    trade = handle_none(trades.get_trade(trade_id))
+    check_access(trade["requester_id"])
     trades.cancel_trade(trade_id)
     return redirect("/my_trades")
 
@@ -72,16 +72,11 @@ def submit_trade():
     target_pokemon_id = request.form.get("requested_pokemon_id")
     offer_pokemon_ids = request.form.getlist("requester_pokemon_ids")
     requester_id = session["user_id"]
-    target = pokemon.get_pokemon_by_id(target_pokemon_id)
-    if not target:
-        abort(404)
+    target = handle_none(pokemon.get_pokemon_by_id(target_pokemon_id))
     offer_pokemon = []
     for offer_id in offer_pokemon_ids:
-        offer = pokemon.get_pokemon_by_id(offer_id)
-        if not offer:
-            abort(404)
-        if offer["owner_id"] != requester_id:
-            abort(403)
+        offer = handle_none(pokemon.get_pokemon_by_id(offer_id))
+        check_access(offer["owner_id"])
         offer_pokemon.append(offer)
 
     try:
@@ -99,7 +94,13 @@ def submit_trade():
 def trade_view(pokemon_id):
     require_login()
     requester_id = session["user_id"]
-    requested_pokemon = pokemon.get_pokemon_by_id(pokemon_id)
+    requested_pokemon = handle_none(pokemon.get_pokemon_by_id(pokemon_id))
+    if requested_pokemon["owner_id"] == requester_id:
+        abort(403)
+    _, pokemon_status = pokemon.get_pokemon_status(pokemon_id)
+    if pokemon_status != "Listattu":
+        abort(404)
+
     requester_pokemon = users.get_my_pokemon(requester_id)
     return render_template("create_proposal.html", requested_pokemon=requested_pokemon, requester_pokemon=requester_pokemon)
 
@@ -121,6 +122,8 @@ def my_pokemon():
 @app.route("/my_pokemon/change_status/<int:pokemon_id>", methods=["POST"])
 def change_status(pokemon_id):
     require_login()
+    target = handle_none(pokemon.get_pokemon_by_id(pokemon_id))
+    check_access(target["owner_id"])
     status = request.form.get("status")
     status_id, pokemon_status = pokemon.get_pokemon_status(pokemon_id)
     if status == pokemon_status:
@@ -140,21 +143,24 @@ def my_pokemon_by_type(pokemon_type):
 def my_pokemon_stats():
     require_login()
     owner_id = session["user_id"]
-    count = users.get_pokemon_count(owner_id)[0]
-    count_by_type = users. get_pokemon_count_by_type(owner_id)
+    count = handle_none(users.get_pokemon_count(owner_id))
+    count_by_type = users.get_pokemon_count_by_type(owner_id)
     return render_template("/my_stats.html", count=count, count_by_type=count_by_type)
 
 
 @app.route("/my_pokemon/edit_pokemon/<int:pokemon_id>")
 def edit_pokemon(pokemon_id):
     require_login()
-    result = pokemon.get_pokemon_by_id(pokemon_id)
+    result = handle_none(pokemon.get_pokemon_by_id(pokemon_id))
+    check_access(result["owner_id"])
     stats = pokemon.get_pokemon_stats(pokemon_id)
     return render_template("edit_pokemon.html", pokemon=result, stats=stats)
 
 @app.route("/my_pokemon/update/<int:pokemon_id>", methods=["POST"])
 def update_pokemon(pokemon_id):
     require_login()
+    result = handle_none(pokemon.get_pokemon_by_id(pokemon_id))
+    check_access(result["owner_id"])
     nickname = request.form.get("nickname")
     new_stat = request.form.get("new_stat")
     new_stat_value = request.form.get("new_stat_value")
@@ -175,12 +181,16 @@ def update_pokemon(pokemon_id):
 @app.route("/my_pokemon/delete/<int:pokemon_id>", methods=["POST"])
 def delete_pokemon(pokemon_id):
     require_login()
+    result = handle_none(pokemon.get_pokemon_by_id(pokemon_id))
+    check_access(result["owner_id"])
     pokemon.remove_pokemon(pokemon_id)
     return redirect("/my_pokemon/")
 
 @app.route("/my_pokemon/delete_stat/<int:pokemon_id>/<int:stat_id>", methods=["POST"])
 def delete_stat(pokemon_id, stat_id):
     require_login()
+    result = handle_none(pokemon.get_pokemon_by_id(pokemon_id))
+    check_access(result["owner_id"])
     pokemon.remove_stat(stat_id)
     return redirect(f"/my_pokemon/edit_pokemon/{pokemon_id}")
 
