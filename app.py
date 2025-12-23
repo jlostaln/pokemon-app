@@ -125,13 +125,19 @@ def change_status(pokemon_id):
     target = handle_none(pokemon.get_pokemon_by_id(pokemon_id))
     check_access(target["owner_id"])
     status = request.form.get("status")
+    status_rows = pokemon.get_all_statuses()
+    all_statuses = []
+    for row in status_rows:
+        all_statuses.append(row["value"])
+    if status not in all_statuses:
+        abort(403)
     status_id, pokemon_status = pokemon.get_pokemon_status(pokemon_id)
     if status == pokemon_status:
         return redirect(f"/my_pokemon#pokemon-{pokemon_id}")
     pokemon.set_pokemon_status(status, status_id)
     return redirect(f"/my_pokemon#pokemon-{pokemon_id}")
 
-@app.route("/my_pokemon/<string:pokemon_type>")
+@app.route("/my_pokemon/stats/<string:pokemon_type>")
 def my_pokemon_by_type(pokemon_type):
     require_login()
     owner_id = session["user_id"]

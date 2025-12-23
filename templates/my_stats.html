@@ -29,7 +29,7 @@
     <p>Pokemonien määrä tyypeittäin:</p>
     <ul>
       {% for type in count_by_type %}
-        <li><a href="/my_pokemon/{{ type.type }}">{{ type.type }}</a>: {{ type.type_count}}</li>
+        <li><a href="/my_pokemon/stats/{{ type.type }}">{{ type.type }}</a>: {{ type.type_count}}</li>
       {% endfor %}
     </ul>
     {% endif %}
