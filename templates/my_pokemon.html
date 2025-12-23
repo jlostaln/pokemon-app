@@ -47,6 +47,7 @@
             <option value="{{ status.value }}">{{ status.value }}</option>
             {% endfor %}
           </select>
+            <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}" />
         </form>
       </li>
       {% if pokemon.nickname %}

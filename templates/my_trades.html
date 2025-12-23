@@ -21,6 +21,7 @@
       <input type="text" name="query" id="query" value="{{ query if query }}" placeholder="status LIKE...">
     </p>
     <input type="submit" value="Filter">
+    <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}" />
   </form>
 
 {% for trade_id, trade_rows in transactions|groupby("trade_id")|reverse %}
@@ -74,13 +75,16 @@
     {% if session.user_id == trade_rows[0].responder_id %}
       <form method="post" action="/trade/{{ trade_id }}/accept">
         <button type="submit">Accept</button>
+        <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}" />
       </form>
       <form method="post" action="/trade/{{ trade_id }}/reject">
         <button type="submit">Reject</button>
+        <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}" />
       </form>
     {% elif session.user_id == trade_rows[0].requester_id %}
       <form method="post" action="/trade/{{ trade_id }}/cancel">
         <button type="submit">Cancel</button>
+        <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}" />
       </form>
     {% endif %}
   {% endif %}

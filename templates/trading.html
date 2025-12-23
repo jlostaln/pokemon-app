@@ -21,6 +21,7 @@
       <input type="text" name="query" id="query" value="{{ query if query }}" placeholder="Nimi tai tyyppi...">
     </p>
     <input type="submit" value="Suodata">
+    <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}" />
   </form>
 
   <h3>Listatut</h3>

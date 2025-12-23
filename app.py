@@ -1,3 +1,4 @@
+import secrets
 import sqlite3
 from flask import Flask
 from flask import render_template, request, redirect, session, abort
@@ -28,6 +29,12 @@ def handle_none(obj):
        abort(404)
     return obj
 
+def check_csrf():
+    if "csrf_token" not in request.form:
+        abort(403)
+    if request.form["csrf_token"] != session["csrf_token"]:
+        abort(403)
+
 @app.route("/")
 def index():
     return render_template("index.html")
@@ -35,6 +42,7 @@ def index():
 @app.route("/trade/<int:trade_id>/accept", methods=["POST"])
 def accept_trade(trade_id):
     require_login()
+    check_csrf()
     trade = handle_none(trades.get_trade(trade_id))
     check_access(trade["responder_id"])
     requester_id = trade["requester_id"]
@@ -45,6 +53,7 @@ def accept_trade(trade_id):
 @app.route("/trade/<int:trade_id>/reject", methods=["POST"])
 def reject_trade(trade_id):
     require_login()
+    check_csrf()
     trade = handle_none(trades.get_trade(trade_id))
     check_access(trade["responder_id"])
     trades.reject_trade(trade_id)
@@ -53,6 +62,7 @@ def reject_trade(trade_id):
 @app.route("/trade/<int:trade_id>/cancel", methods=["POST"])
 def cancel_trade(trade_id):
     require_login()
+    check_csrf()
     trade = handle_none(trades.get_trade(trade_id))
     check_access(trade["requester_id"])
     trades.cancel_trade(trade_id)
@@ -69,6 +79,7 @@ def my_trades():
 @app.route("/submit_request", methods=["POST"])
 def submit_trade():
     require_login()
+    check_csrf()
     target_pokemon_id = request.form.get("requested_pokemon_id")
     offer_pokemon_ids = request.form.getlist("requester_pokemon_ids")
     requester_id = session["user_id"]
@@ -122,6 +133,7 @@ def my_pokemon():
 @app.route("/my_pokemon/change_status/<int:pokemon_id>", methods=["POST"])
 def change_status(pokemon_id):
     require_login()
+    check_csrf()
     target = handle_none(pokemon.get_pokemon_by_id(pokemon_id))
     check_access(target["owner_id"])
     status = request.form.get("status")
@@ -165,6 +177,7 @@ def edit_pokemon(pokemon_id):
 @app.route("/my_pokemon/update/<int:pokemon_id>", methods=["POST"])
 def update_pokemon(pokemon_id):
     require_login()
+    check_csrf()
     result = handle_none(pokemon.get_pokemon_by_id(pokemon_id))
     check_access(result["owner_id"])
     nickname = request.form.get("nickname")
@@ -193,6 +206,7 @@ def update_pokemon(pokemon_id):
 @app.route("/my_pokemon/delete/<int:pokemon_id>", methods=["POST"])
 def delete_pokemon(pokemon_id):
     require_login()
+    check_csrf()
     result = handle_none(pokemon.get_pokemon_by_id(pokemon_id))
     check_access(result["owner_id"])
     pokemon.remove_pokemon(pokemon_id)
@@ -201,6 +215,7 @@ def delete_pokemon(pokemon_id):
 @app.route("/my_pokemon/delete_stat/<int:pokemon_id>/<int:stat_id>", methods=["POST"])
 def delete_stat(pokemon_id, stat_id):
     require_login()
+    check_csrf()
     result = handle_none(pokemon.get_pokemon_by_id(pokemon_id))
     check_access(result["owner_id"])
     pokemon.remove_stat(stat_id)
@@ -209,6 +224,7 @@ def delete_stat(pokemon_id, stat_id):
 @app.route("/capture_pokemon/<string:pokemon_name>", methods=["POST"])
 def capture_pokemon(pokemon_name):
     require_login()
+    check_csrf()
     success = random.randint(0, 100) < 50
     if success:
         name = request.form["name"]
@@ -320,6 +336,7 @@ def login():
         if user_id:
             session["user_id"] = user_id
             session["username"] = username
+            session["csrf_token"] = secrets.token_hex(16)
             return redirect("/")
         else:
             print("VIRHE: väärä tunnus tai salasana") # flashiksi kehityksen edetessä

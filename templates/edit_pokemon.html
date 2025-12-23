@@ -38,6 +38,7 @@
         </li>
       </ul>
      <button type="submit">Tallenna muutokset</button>
+      <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}" />
     </form>
 
       <p>Tilastot:</p>
@@ -49,6 +50,7 @@
                   method="POST"
                   style="display:inline;">
             <button type="submit">Poista</button>
+            <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}" />
           </form>
           {% endif %}
         </li>
@@ -57,7 +59,8 @@
     <form action="/my_pokemon/delete/{{ pokemon.id }}"
           method="POST"
           onsubmit="return confirm('Haluatko varmasti poistaa tämän Pokémonin?');">
-    <button type="submit" style="background-color:red; color:white; margin-top:20px">Poista Pokémon</button>
+      <button type="submit" style="background-color:red; color:white; margin-top:20px">Poista Pokémon</button>
+      <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}" />
     </form>
   </div>
 
