@@ -1,96 +1,84 @@
-<!DOCTYPE html>
-<html>
+{% extends "layout.html" %}
 
-<head>
-  <title>Omat Kaupat</title>
-</head>
+{% block title %}My Trades{% endblock %}
 
-<body>
-  <h2>Omat kaupat</h2>
+{% block content %}
+<h2>My Trades</h2>
 
+<form action="/my_trades" method="get">
   <p>
-    <a href="/">Etusivu</a>
-    <a href="/location-area/">Etsi pokémoneja</a>
-    <a href="/my_pokemon">OmaPokémon</a>
-    <a href="/trading/">Vaihda Pokemoneja</a>
+    <label for="query">Trade status (pending | rejected | completed)</label>:
+    <input type="text" name="query" id="query" value="{{ query if query }}" placeholder="status LIKE...">
   </p>
+  <input type="submit" value="Filter">
+  <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}" />
+</form>
 
-  <form action="/my_trades" method="get">
-    <p>
-      <label for="query">Trade status</label>:
-      <input type="text" name="query" id="query" value="{{ query if query }}" placeholder="status LIKE...">
-    </p>
-    <input type="submit" value="Filter">
-    <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}" />
-  </form>
-
+  <hr>
 {% for trade_id, trade_rows in transactions|groupby("trade_id")|reverse %}
-  <h2>Trade {{ trade_id }}</h2>
-  <p>Status: {{ trade_rows[0].status }}</p>
-  <p>
-    Requester: {{ trade_rows[0].requester_id }} |
-    Responder: {{ trade_rows[0].responder_id }}
-  </p>
-  <p>
-    {% if session.user_id == trade_rows[0].requester_id %}
-      You are the requester in this swap.
-    {% elif session.user_id == trade_rows[0].responder_id %}
-      You are the responder in this swap.
-    {% endif %}
-  </p>
-
-  <p>Swap</p>
-  <ul>
-    {% for row in trade_rows if row.side == "responder" %}
-      <li>
-        {{ row.pokemon_name }}
-        (
-        {% if session.user_id == row.responder_id %}
-          you
-        {% else %}
-          responder
-        {% endif %}
-        )
-      </li>
-    {% endfor %}
-  </ul>
-
-  <p>For</p>
-  <ul>
-    {% for row in trade_rows if row.side == "requester" %}
-      <li>
-        {{ row.pokemon_name }}
-        (
-        {% if session.user_id == row.requester_id %}
-          you
-        {% else %}
-          requester
-        {% endif %}
-        )
-      </li>
-    {% endfor %}
-  </ul>
-
-  {% if trade_rows[0].status == "pending" %}
-    {% if session.user_id == trade_rows[0].responder_id %}
-      <form method="post" action="/trade/{{ trade_id }}/accept">
-        <button type="submit">Accept</button>
-        <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}" />
-      </form>
-      <form method="post" action="/trade/{{ trade_id }}/reject">
-        <button type="submit">Reject</button>
-        <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}" />
-      </form>
-    {% elif session.user_id == trade_rows[0].requester_id %}
-      <form method="post" action="/trade/{{ trade_id }}/cancel">
-        <button type="submit">Cancel</button>
-        <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}" />
-      </form>
-    {% endif %}
+<h3>Trade {{ trade_id }}</h3>
+<p>Status: {{ trade_rows[0].status }}</p>
+<p>
+  Requester: {{ trade_rows[0].requester_id }} |
+  Responder: {{ trade_rows[0].responder_id }}
+</p>
+<p>
+  {% if session.user_id == trade_rows[0].requester_id %}
+    You are the requester in this swap.
+  {% elif session.user_id == trade_rows[0].responder_id %}
+    You are the responder in this swap.
   {% endif %}
-    <hr>
+</p>
+
+<p>Swap</p>
+<ul>
+  {% for row in trade_rows if row.side == "responder" %}
+    <li>
+      {{ row.pokemon_name }}
+      (
+      {% if session.user_id == row.responder_id %}
+        you
+      {% else %}
+        responder
+      {% endif %}
+      )
+    </li>
+  {% endfor %}
+</ul>
+
+<p>For</p>
+<ul>
+  {% for row in trade_rows if row.side == "requester" %}
+    <li>
+      {{ row.pokemon_name }}
+      (
+      {% if session.user_id == row.requester_id %}
+        you
+      {% else %}
+        requester
+      {% endif %}
+      )
+    </li>
+  {% endfor %}
+</ul>
+
+{% if trade_rows[0].status == "pending" %}
+  {% if session.user_id == trade_rows[0].responder_id %}
+    <form method="post" action="/trade/{{ trade_id }}/accept">
+      <button type="submit">Accept</button>
+      <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}" />
+    </form>
+    <form method="post" action="/trade/{{ trade_id }}/reject">
+      <button type="submit">Reject</button>
+      <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}" />
+    </form>
+  {% elif session.user_id == trade_rows[0].requester_id %}
+    <form method="post" action="/trade/{{ trade_id }}/cancel">
+      <button type="submit">Cancel</button>
+      <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}" />
+    </form>
+  {% endif %}
+{% endif %}
+  <hr>
 {% endfor %}
-
-</body>
-
-</html>
+{% endblock %}

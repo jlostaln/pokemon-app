@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>{% block title %}{% endblock %}</title>
+</head>
+
+<body>
+  <h1>Pokemon-App</h1>
+
+  {% if session.user_id %}
+  <p>
+    You are logged in as {{ session.username }}</a>
+  </p>
+  {% endif %}
+
+  <div class="navigation">
+    <p>
+      {% if session.user_id %}
+      <a href="/">Overview</a> |
+      <a href="/location-area/">Find Pokémon</a> |
+      <a href="/my_pokemon">My Pokémon</a> |
+      <a href="/my_pokemon/stats/">My Stats</a> |
+      <a href="/my_trades">My Trades</a> |
+      <a href="/trading/">Trade Pokémon</a> |
+      <a href="/logout">Sign out</a>
+      {% else %}
+      <a href="/login">Sign in</a> |
+      <a href="/register">Register</a>
+      {% endif %}
+    </p>
+  </div>
+
+  {% block content %}{% endblock %}
+</body>
+
+</html>

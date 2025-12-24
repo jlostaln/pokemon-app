@@ -225,7 +225,7 @@ def delete_stat(pokemon_id, stat_id):
 def capture_pokemon(pokemon_name):
     require_login()
     check_csrf()
-    success = random.randint(0, 100) < 50
+    success = random.randint(0, 100) < 80
     if success:
         name = request.form["name"]
         owner_id = session["user_id"]

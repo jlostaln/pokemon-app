@@ -1,22 +1,17 @@
-<!DOCTYPE html>
-<html>
+{% extends "layout.html" %}
 
-<head>
-  <title>Kirjautuminen</title>
-</head>
+{% block title %}Login{% endblock %}
 
-<body>
-  <form action="/login" method="post">
-    <p>
-      Tunnus: <br />
-      <input type="text" name="username" />
-    </p>
-    <p>
-      Salasana: <br />
-      <input type="password" name="password" />
-    </p>
-    <input type="submit" value="Kirjaudu" />
-  </form>
-</body>
-
-</html>
+{% block content %}
+<form action="/login" method="post">
+  <p>
+    Username: <br />
+    <input type="text" name="username" />
+  </p>
+  <p>
+    Password: <br />
+    <input type="password" name="password" />
+  </p>
+  <input type="submit" value="Login" />
+</form>
+{% endblock %}

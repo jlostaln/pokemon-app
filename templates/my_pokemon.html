@@ -1,66 +1,42 @@
-<!DOCTYPE html>
-<html>
+{% extends "layout.html" %}
 
-<head>
-  <title>OmaPokémon</title>
-</head>
+{% block title %}My Pokémon{% endblock %}
 
-<body>
-  <h2>OmaPokémon</h2>
+{% block content %}
+<h2>My Pokémon</h2>
 
-  <p>
-    <a href="/">Etusivu</a>
-    <a href="/location-area/">Etsi pokémoneja</a>
-    <a href="/my_pokemon">OmaPokémon</a>
-    <a href="/my_pokemon/stats/">Omat tilastot</a>
-    <a href="/my_trades">Omat Kaupat</a>
-    <a href="/trading/">Vaihda Pokemoneja</a>
-  </p>
+{% for pokemon in pokemons %}
+<div class="pokemon" id="pokemon-{{ pokemon.id }}">
+    <h3>{{ pokemon.name }}</h3>
+  <img src="{{ pokemon.sprite }}" alt="{{ pokemon.name }} sprite">
+  <br />
+  <a href="/my_pokemon/edit_pokemon/{{ pokemon.id }}">Inspect and develop</a>
 
-  <div class="navigation">
-  {% if session["current_area"] %}
-      <a href="/encounters/{{ session["current_area"] }}">Takaisin alueelle</a>
-  {% else %}
-    <a href="/location-area/">Takaisin</a>
-  {% endif %}
-  </div>
-
-  {% for pokemon in pokemons %}
-  <div class="pokemon" id="pokemon-{{ pokemon.id }}">
-      <h3>{{ pokemon.name }}</h3>
-    <img src="{{ pokemon.sprite }}" alt="{{ pokemon.name }} sprite">
-    <br />
-    <a href="/my_pokemon/edit_pokemon/{{ pokemon.id }}">Tutki tai kehitä</a>
-
-    <ul>
-      <li>Nimi: {{ pokemon.name }}</li>
-      <li>
-        <form action="/my_pokemon/change_status/{{ pokemon.id }}#pokemon-{{ pokemon.id }}" method="post">
-          {% if pokemon.status %}
-          <label for="status">Tila: {{ pokemon.status}} </label>
-          {% else %}
-          <label for="status">Tila: Ei valittu </label>
-          {% endif %}
-          <select name="status" id="status" onchange="this.form.submit()">
-            <option value="{{ pokemon.status }}">(valitse)</option>
-            {% for status in statuses %}
-            <option value="{{ status.value }}">{{ status.value }}</option>
-            {% endfor %}
-          </select>
-            <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}" />
-        </form>
-      </li>
-      {% if pokemon.nickname %}
-      <li>Lempinimi: {{ pokemon.nickname }} </li>
-      {% endif %}
-      <li>Tyyppi: {{ pokemon.types }}</li>
-      <li>Kuvaus: {{ pokemon.flavor_text }}</li>
-    </ul>
-    <br/>
-  </div>
-  {% endfor %}
-
-
-</body>
-
-</html>
+  <ul>
+    <li>Name: {{ pokemon.name }}</li>
+    <li>
+      <form action="/my_pokemon/change_status/{{ pokemon.id }}#pokemon-{{ pokemon.id }}" method="post">
+        {% if pokemon.status %}
+        <label for="status">Status: {{ pokemon.status}} </label>
+        {% else %}
+        <label for="status">Status: Not selected </label>
+        {% endif %}
+        <select name="status" id="status" onchange="this.form.submit()">
+          <option value="{{ pokemon.status }}">(select)</option>
+          {% for status in statuses %}
+          <option value="{{ status.value }}">{{ status.value }}</option>
+          {% endfor %}
+        </select>
+          <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}" />
+      </form>
+    </li>
+    {% if pokemon.nickname %}
+    <li>Nickname: {{ pokemon.nickname }} </li>
+    {% endif %}
+    <li>Type: {{ pokemon.types }}</li>
+    <li>Description: {{ pokemon.flavor_text }}</li>
+  </ul>
+  <br/>
+</div>
+{% endfor %}
+{% endblock %}

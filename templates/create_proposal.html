@@ -1,65 +1,55 @@
-<!DOCTYPE html>
-<html>
+{% extends "layout.html" %}
 
-<head>
-  <title>Vaihda Pokemoneja</title>
-</head>
+{% block title %}Make an offer{% endblock %}
 
-<body>
-  <h2>Vaihtokauppa</h2>
+{% block content %}
+<h2>Make an offer</h2>
+<form action="/submit_request" method="POST">
+  <button type="submit">Send offer</button>
 
-  <p>
-    <a href="/">Etusivu</a>
-    <a href="/location-area/">Etsi pokémoneja</a>
-    <a href="/my_pokemon">OmaPokémon</a>
-    <a href="/trading/">Vaihda Pokemoneja</a>
-  </p>
+  <hr>
 
-  <form action="/submit_request" method="POST">
-    <button type="submit">Lähetä vaihtopyyntö</button>
+  <h3>Target Pokémon</h3>
 
-    <h3>Kohde Pokemon</h3>
+  <div class="pokemon">
+      <h3>{{ requested_pokemon.name }}</h3>
+    <img src="{{ requested_pokemon.sprite }}" alt="{{ requested_pokemon.name }} sprite">
+    <br />
 
-    <div class="pokemon">
-        <h3>{{ requested_pokemon.name }}</h3>
-      <img src="{{ requested_pokemon.sprite }}" alt="{{ requested_pokemon.name }} sprite">
-      <br />
+    <ul>
+      <li>Name: {{ requested_pokemon.name }}</li>
+      {% if requested_pokemon.nickname %}
+      <li>Nickname: {{ requested_pokemon.nickname }} </li>
+      {% endif %}
+      <li>Type: {{ requested_pokemon.types }}</li>
+    </ul>
+    <br/>
+     <input type="hidden" name="requested_pokemon_id" value="{{ requested_pokemon.id }}">
+  </div>
 
-      <ul>
-        <li>Nimi: {{ requested_pokemon.name }}</li>
-        {% if requested_pokemon.nickname %}
-        <li>Lempinimi: {{ requested_pokemon.nickname }} </li>
-        {% endif %}
-        <li>Tyyppi: {{ requested_pokemon.types }}</li>
-      </ul>
-      <br/>
-       <input type="hidden" name="requested_pokemon_id" value="{{ requested_pokemon.id }}">
-    </div>
+  <hr>
 
+  <h3>Your Pokémon</h3>
+  {% for pokemon in requester_pokemon %}
+  <div class="pokemon">
+      <h3>{{ pokemon.name }}</h3>
+    <img src="{{ pokemon.sprite }}" alt="{{ pokemon.name }} sprite">
+    <br />
 
-    <h3>Sinun pokemonit</h3>
-    {% for pokemon in requester_pokemon %}
-    <div class="pokemon">
-        <h3>{{ pokemon.name }}</h3>
-      <img src="{{ pokemon.sprite }}" alt="{{ pokemon.name }} sprite">
-      <br />
+    <ul>
+      <li>Name: {{ pokemon.name }}</li>
+      {% if pokemon.nickname %}
+      <li>Nickname: {{ pokemon.nickname }} </li>
+      {% endif %}
+      <li>Type: {{ pokemon.types }}</li>
+      <label>
+      <input type="checkbox" name="requester_pokemon_ids" value="{{ pokemon.id }}">
+      Include Pokémon in offer
+    </label>
+    </ul>
 
-      <ul>
-        <li>Nimi: {{ pokemon.name }}</li>
-        {% if pokemon.nickname %}
-        <li>Lempinimi: {{ pokemon.nickname }} </li>
-        {% endif %}
-        <li>Tyyppi: {{ pokemon.types }}</li>
-        <label>
-        <input type="checkbox" name="requester_pokemon_ids" value="{{ pokemon.id }}">
-        Valitse tämä Pokémon
-      </label>
-      </ul>
-
-    </div>
-    {% endfor %}
-    <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}" />
-  </form>
-</body>
-
-</html>
+  </div>
+  {% endfor %}
+  <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}" />
+</form>
+{% endblock %}

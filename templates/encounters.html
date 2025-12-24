@@ -1,32 +1,21 @@
-<!DOCTYPE html>
-<html>
+{% extends "layout.html" %}
 
-<head>
-  <title>Alueen pokémonit</title>
-</head>
+{% block title %}Pokemon-App{% endblock %}
 
-<body>
-    <h2>Alueen {{ session["current_area"] }} pokémonit</h2>
+{% block content %}
+<h2>Pokémon in {{ session["current_area"] }}</h2>
 
-  <p>
-    <a href="/">Etusivu</a>
-    <a href="/location-area/">Etsi pokémoneja</a>
-    <a href="/my_pokemon">OmaPokémon</a>
-  </p>
+<div class="sub_navigation">
+{% if session["current_locations_url"] %}
+  <a href="/location-area/current">Back</a>
+{% else %}
+  <a href="/location-area/">Back</a>
+{% endif %}
+</div>
 
-  <div class="navigation">
-  {% if session["current_locations_url"] %}
-    <a href="/location-area/current">Takaisin</a>
-  {% else %}
-    <a href="/location-area/">Takaisin</a>
-  {% endif %}
-  </div>
-
-  <ul>
-  {% for encounter in encounters %}
-    <li><a href="/inspect/{{ encounter.pokemon.name }}">{{ encounter.pokemon.name }}</a></li>
-  {% endfor %}
-  </ul>
-</body>
-
-</html>
+<ul>
+{% for encounter in encounters %}
+  <li><a href="/inspect/{{ encounter.pokemon.name }}">{{ encounter.pokemon.name }}</a></li>
+{% endfor %}
+</ul>
+{% endblock %}

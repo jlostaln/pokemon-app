@@ -1,55 +1,41 @@
-<!DOCTYPE html>
-<html>
+{% extends "layout.html" %}
 
-<head>
-  <title>Vaihda Pokemoneja</title>
-</head>
+{% block title %}Trading{% endblock %}
 
-<body>
-  <h2>Vaihtokauppa</h2>
-
+{% block content %}
+<h2>Listed Pokémon</h2>
+<form action="/trading/" method="get">
   <p>
-    <a href="/">Etusivu</a>
-    <a href="/location-area/">Etsi pokémoneja</a>
-    <a href="/my_pokemon">OmaPokémon</a>
-    <a href="/my_trades">Omat Kaupat</a>
+    <label for="query">Keyword</label>:
+    <input type="text" name="query" id="query" value="{{ query if query }}" placeholder="Name or type">
   </p>
+  <input type="submit" value="Filter">
+  <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}" />
+</form>
 
-  <form action="/trading/" method="get">
-    <p>
-      <label for="query">Hakusana</label>:
-      <input type="text" name="query" id="query" value="{{ query if query }}" placeholder="Nimi tai tyyppi...">
-    </p>
-    <input type="submit" value="Suodata">
-    <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}" />
-  </form>
+<hr>
+{% for pokemon in pokemons %}
+<div class="pokemon">
+    <h3>{{ pokemon.name }}</h3>
+  <img src="{{ pokemon.sprite }}" alt="{{ pokemon.name }} sprite">
+  <br />
 
-  <h3>Listatut</h3>
-
-  {% for pokemon in pokemons %}
-  <div class="pokemon">
-      <h3>{{ pokemon.name }}</h3>
-    <img src="{{ pokemon.sprite }}" alt="{{ pokemon.name }} sprite">
-    <br />
-
-    <ul>
-      <li>Nimi: {{ pokemon.name }}</li>
-      <li>Omistaja: {{ pokemon.username }}</li>
-      {% if pokemon.nickname %}
-      <li>Lempinimi: {{ pokemon.nickname }} </li>
-      {% endif %}
-      <li>Tyyppi: {{ pokemon.types }}</li>
-      <li>Kuvaus: {{ pokemon.flavor_text }}</li>
-      {% if session.user_id != pokemon.owner_id %}
-      <a href="/trading/{{ pokemon.id }}">Tee tarjous</a>
-      {% else %}
-      <p>Sinä omistat tämän pokemonin</p>
-      {% endif %}
-    </ul>
-    <br/>
-  </div>
-  {% endfor %}
-
-</body>
-
-</html>
+  <ul>
+    <li>Name: {{ pokemon.name }}</li>
+    <li>Owner: {{ pokemon.username }}</li>
+    {% if pokemon.nickname %}
+    <li>Nickname: {{ pokemon.nickname }} </li>
+    {% endif %}
+    <li>Type: {{ pokemon.types }}</li>
+    <li>Description: {{ pokemon.flavor_text }}</li>
+    {% if session.user_id != pokemon.owner_id %}
+    <a href="/trading/{{ pokemon.id }}">Make offer</a>
+    {% else %}
+    <p>You own this Pokémon</p>
+    {% endif %}
+  </ul>
+  <br/>
+</div>
+<hr>
+{% endfor %}
+{% endblock %}

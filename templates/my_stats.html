@@ -1,40 +1,19 @@
-<!DOCTYPE html>
-<html>
+{% extends "layout.html" %}
 
-<head>
-  <title>Omat tilastot</title>
-</head>
+{% block title %}My Statistics{% endblock %}
 
-<body>
-  <h2>Omat tilastot</h2>
+{% block content %}
+<h2>My Statistics</h2>
 
-  <p>
-    <a href="/">Etusivu</a>
-    <a href="/location-area/">Etsi pokémoneja</a>
-    <a href="/my_pokemon">OmaPokémon</a>
-    <a href="/my_trades">Omat Kaupat</a>
-  </p>
-
-  <div class="navigation">
-    <a href="/my_pokemon">Takaisin</a>
-  </div>
-
-  <div class="stats">
-    {% if count.total_count == 1 %}
-    <p>Sinä omistat yhden pokemonin.</p>
-    {% else %}
-    <p>Sinä omistat {{ count.total_count }} pokemonia.</p>
-    {% endif %}
-    {% if count.total_count > 0 %}
-    <p>Pokemonien määrä tyypeittäin:</p>
-    <ul>
-      {% for type in count_by_type %}
-        <li><a href="/my_pokemon/stats/{{ type.type }}">{{ type.type }}</a>: {{ type.type_count}}</li>
-      {% endfor %}
-    </ul>
-    {% endif %}
-  </div>
-
-</body>
-
-</html>
+<div class="stats">
+  <p>You own {{ count.total_count }} Pokémon.</p>
+  {% if count.total_count > 0 %}
+  <p>Pokémon count by type:</p>
+  <ul>
+    {% for type in count_by_type %}
+      <li><a href="/my_pokemon/stats/{{ type.type }}">{{ type.type }}</a>: {{ type.type_count}}</li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+</div>
+{% endblock %}

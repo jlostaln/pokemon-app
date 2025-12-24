@@ -1,70 +1,51 @@
-<!DOCTYPE html>
-<html>
+{% extends "layout.html" %}
 
-<head>
-  <title>Pokémonin päivitys</title>
-</head>
+{% block title %}Pokemon-App{% endblock %}
 
-<body>
-  <h2>{{ pokemon.name }}</h2>
-
-  <p>
-    <a href="/">Etusivu</a>
-    <a href="/location-area/">Etsi pokémoneja</a>
-    <a href="/my_pokemon">OmaPokémon</a>
-  </p>
-
-  <div class="navigation">
-      <a href="/my_pokemon">Takaisin</a>
-  </div>
-
-  <div class="pokemon">
-    <img src="{{ pokemon.sprite }}" alt="{{ pokemon.name }} sprite">
-    <br />
-    <p>Nimi: {{ pokemon.name }}</p>
-    <form action="/my_pokemon/update/{{ pokemon.id }}" method="POST">
-      <label for="nickname">Lempinimi: {{ pokemon.nickname }} </label>
-      <input type="text" id="nickname" name="nickname" placeholder="Anna uusi lempinimi" maxlength="20">
+{% block content %}
+<h2>{{ pokemon.name }}</h2>
 
 
-      <p>Tyyppi: {{ pokemon.types }}</p>
-      <p>Seuraava muoto: {{ pokemon.next_evolution }}</p>
-      <p>{{ pokemon.flavor_text }}</p>
-      <p>Lisää uusi tilasto/kyky:</p>
-      <ul>
-        <li>
-          <input type="text" name="new_stat" placeholder="Tilaston nimi" maxlength="20">:
-          <input type="text" name="new_stat_value" placeholder="Tilaston arvo">
-        </li>
-      </ul>
-     <button type="submit">Tallenna muutokset</button>
+<div class="pokemon">
+  <img src="{{ pokemon.sprite }}" alt="{{ pokemon.name }} sprite">
+  <br />
+  <p>Name: {{ pokemon.name }}</p>
+  <form action="/my_pokemon/update/{{ pokemon.id }}" method="POST">
+    <label for="nickname">Nickname: {{ pokemon.nickname }} </label>
+    <input type="text" id="nickname" name="nickname" placeholder="Give a nickname" maxlength="20">
+
+
+    <p>Type: {{ pokemon.types }}</p>
+    <p>Next evolution: {{ pokemon.next_evolution }}</p>
+    <p>{{ pokemon.flavor_text }}</p>
+    <p>Add a new statistic/skill:</p>
+    <ul>
+      <li>
+        <input type="text" name="new_stat" placeholder="Skill name" maxlength="20">:
+        <input type="text" name="new_stat_value" placeholder="Skill value">
+      </li>
+    </ul>
+    <button type="submit">Save changes</button>
+    <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}" />
+  </form>
+
+  <p>Statistics:</p>
+  <ul>
+    {% for stat in stats %}
+    <li>{{ stat.stat }}: {{ stat.value }}
+      {% if stat.is_base_stat == 0 %}
+      <form action="/my_pokemon/delete_stat/{{ pokemon.id }}/{{ stat.id }}" method="POST" style="display:inline;">
+        <button type="submit">Remove</button>
+        <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}" />
+      </form>
+      {% endif %}
+    </li>
+    {% endfor %}
+
+    <form action="/my_pokemon/delete/{{ pokemon.id }}" method="POST"
+      onsubmit="return confirm('Are you sure you want to delete this Pokémon');">
+      <button type="submit" style="background-color:red; color:white; margin-top:20px">Delete Pokémon</button>
       <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}" />
     </form>
-
-      <p>Tilastot:</p>
-      <ul>
-        {% for stat in stats %}
-        <li>{{ stat.stat }}: {{ stat.value }}
-          {% if stat.is_base_stat == 0 %}
-            <form action="/my_pokemon/delete_stat/{{ pokemon.id }}/{{ stat.id }}"
-                  method="POST"
-                  style="display:inline;">
-            <button type="submit">Poista</button>
-            <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}" />
-          </form>
-          {% endif %}
-        </li>
-        {% endfor %}
-
-    <form action="/my_pokemon/delete/{{ pokemon.id }}"
-          method="POST"
-          onsubmit="return confirm('Haluatko varmasti poistaa tämän Pokémonin?');">
-      <button type="submit" style="background-color:red; color:white; margin-top:20px">Poista Pokémon</button>
-      <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}" />
-    </form>
-  </div>
-
-
-</body>
-
-</html>
+</div>
+{% endblock %}

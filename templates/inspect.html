@@ -1,75 +1,64 @@
-<!DOCTYPE html>
-<html>
+{% extends "layout.html" %}
 
-<head>
-  <title>Pokémon</title>
-</head>
+{% block title %}Pokemon-App{% endblock %}
 
-<body>
-  <h2>Pokémon</h2>
+{% block content %}
+<h2>Wild Pokémon {{ pokemon.name }}</h2>
 
-  <p>
-    <a href="/">Etusivu</a>
-    <a href="/location-area/">Etsi pokémoneja</a>
-    <a href="/my_pokemon">OmaPokémon</a>
-  </p>
+<div class="sub_navigation">
+{% if session["current_area"] %}
+    <a href="/encounters/{{ session["current_area"] }}">Back</a>
+{% else %}
+  <a href="/location-area/">Back</a>
+{% endif %}
+</div>
 
-  <div class="navigation">
-  {% if session["current_area"] %}
-      <a href="/encounters/{{ session["current_area"] }}">Takaisin</a>
-  {% else %}
-    <a href="/location-area/">Takaisin</a>
-  {% endif %}
-  </div>
+<div class="pokemon">
+  <img src="{{ pokemon.sprites.front_default }}" alt="Pokemon sprite">
+  <p>{{ pokemon.flavor_text }}</p>
+  <ul>
+    <li>Name: {{ pokemon.name }}</li>
+    <li>Height: {{ pokemon.height / 10 }}m</li>
+    <li>Weight: {{ pokemon.weight / 10 }}kg</li>
+    <li>Type:
+      <ul>
+        {% for type in pokemon.types %}
+        <li>{{ type.type.name }}</li>
+        {% endfor %}
+      </ul>
+    </li>
+    <li>Base experience: {{ pokemon.base_experience }}</li>
+    <li>Statistics:
+      <ul>
+        {% for stat in pokemon.stats %}
+          <li>{{ stat.stat.name }}: {{ stat.base_stat }}</li>
+        {% endfor %}
+      </ul>
+    </li>
+    {% if pokemon.next_evolution %}
+    <li>Next evolution: {{ pokemon.next_evolution }}</li>
+    {% endif %}
+  </ul>
+</div>
 
-  <div class="pokemon">
-    <img src="{{ pokemon.sprites.front_default }}" alt="Pokemon sprite">
-    <p>{{ pokemon.flavor_text }}</p>
-    <ul>
-      <li>Nimi: {{ pokemon.name }}</li>
-      <li>Pituus: {{ pokemon.height / 10 }}m</li>
-      <li>Paino: {{ pokemon.weight / 10 }}kg</li>
-      <li>Tyyppi:
-        <ul>
-          {% for type in pokemon.types %}
-          <li>{{ type.type.name }}</li>
-          {% endfor %}
-        </ul>
-      </li>
-      <li>Kokemuspisteet: {{ pokemon.base_experience }}</li>
-      <li>Tilastot:
-        <ul>
-          {% for stat in pokemon.stats %}
-            <li>{{ stat.stat.name }}: {{ stat.base_stat }}</li>
-          {% endfor %}
-        </ul>
-      </li>
-      {% if pokemon.next_evolution %}
-      <li>Seuraava muoto: {{ pokemon.next_evolution }}</li>
-      {% endif %}
-    </ul>
-  </div>
-
-  <form action="/capture_pokemon/{{ pokemon.name }}"
-        method="post"
-        onsubmit="return confirm('Haluatko heittää Poképallon?');">
-    <input type="hidden" name="name" value="{{ pokemon.name }}">
-    <input type="hidden" name="height" value="{{ pokemon.height / 10 }}">
-    <input type="hidden" name="weight" value="{{ pokemon.weight / 10 }}">
-    <input type="hidden" name="types" value='{{ pokemon.types | tojson }}'>
-    <input type="hidden" name="base_experience" value="{{ pokemon.base_experience }}">
-    <input type="hidden" name="stats" value='{{ pokemon.stats | tojson }}'>
-    <input type="hidden" name="next_evolution" value="{{ pokemon.next_evolution }}">
-    <input type="hidden" name="flavor_text" value="{{ pokemon.flavor_text }}">
-    <input type="hidden" name="sprite" value="{{ pokemon.sprites.front_default }}">
-    <input type="submit" value="Nappaa {{ pokemon.name }}"/>
-    <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}" />
-  </form>
-  {% if capture_result == False %}
-  <p style="color: red;">{{ pokemon.name }} pääsi karkuun! Yritä uudelleen.</p>
-  {% elif capture_result == True %}
-  <p style="color: green;">{{ pokemon.name }} napattu onnistuneesti!</p>
-  {% endif %}
-</body>
-
-</html>
+<form action="/capture_pokemon/{{ pokemon.name }}"
+      method="post"
+      onsubmit="return confirm('Do you want to throw a Pokéball?');">
+  <input type="hidden" name="name" value="{{ pokemon.name }}">
+  <input type="hidden" name="height" value="{{ pokemon.height / 10 }}">
+  <input type="hidden" name="weight" value="{{ pokemon.weight / 10 }}">
+  <input type="hidden" name="types" value='{{ pokemon.types | tojson }}'>
+  <input type="hidden" name="base_experience" value="{{ pokemon.base_experience }}">
+  <input type="hidden" name="stats" value='{{ pokemon.stats | tojson }}'>
+  <input type="hidden" name="next_evolution" value="{{ pokemon.next_evolution }}">
+  <input type="hidden" name="flavor_text" value="{{ pokemon.flavor_text }}">
+  <input type="hidden" name="sprite" value="{{ pokemon.sprites.front_default }}">
+  <input type="submit" value="Capture {{ pokemon.name }}"/>
+  <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}" />
+</form>
+{% if capture_result == False %}
+<p style="color: red;">{{ pokemon.name }} escaped! Try again.</p>
+{% elif capture_result == True %}
+<p style="color: green;">{{ pokemon.name }} captured successfully!</p>
+{% endif %}
+{% endblock %}

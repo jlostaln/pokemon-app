@@ -1,33 +1,22 @@
-<!DOCTYPE html>
-<html>
+{% extends "layout.html" %}
 
-<head>
-  <title>Alueet</title>
-</head>
+{% block title %}Find Pokémon{% endblock %}
 
-<body>
-  <h2>Alueet</h2>
+{% block content %}
+<h2>Location Browser</h2>
 
-  <p>
-    <a href="/">Etusivu</a>
-    <a href="/location-area/">Etsi pokémoneja</a>
-    <a href="/my_pokemon">OmaPokémon</a>
-  </p>
-
-  <div class="navigation">
+<div class="sub_navigation">
   {% if session["previous_locations_url"] %}
-    <a href="/location-area/previous">Edellinen</a>
+  <a href="/location-area/previous">Previous</a>
   {% endif %}
   {% if session["next_locations_url"] %}
-    <a href="/location-area/next">Seuraava</a>
+  <a href="/location-area/next">Next</a>
   {% endif %}
-  </div>
+</div>
 
-  <ul>
+<ul>
   {% for area in areas %}
-    <li><a href="/encounters/{{ area.name }}">{{ area.name }}</a></li>
+  <li><a href="/encounters/{{ area.name }}">{{ area.name }}</a></li>
   {% endfor %}
-  </ul>
-</body>
-
-</html>
+</ul>
+{% endblock %}
