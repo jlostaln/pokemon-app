@@ -37,6 +37,8 @@ def check_csrf():
 
 @app.route("/")
 def index():
+    if "user_id" in session:
+        return redirect("/my_pokemon/stats")
     return render_template("index.html")
 
 @app.route("/trade/<int:trade_id>/accept", methods=["POST"])
