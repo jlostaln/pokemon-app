@@ -1,7 +1,8 @@
+from datetime import datetime
 import secrets
 import sqlite3
 from flask import Flask
-from flask import render_template, request, redirect, session, abort
+from flask import render_template, request, redirect, session, abort, flash
 import users
 import config
 import db
@@ -50,6 +51,7 @@ def accept_trade(trade_id):
     requester_id = trade["requester_id"]
     responder_id = trade["responder_id"]
     trades.accept_trade(trade_id, requester_id, responder_id)
+    flash(f"Trade {trade_id} accepted! Deal is now completed.")
     return redirect("/my_trades")
 
 @app.route("/trade/<int:trade_id>/reject", methods=["POST"])
@@ -59,6 +61,7 @@ def reject_trade(trade_id):
     trade = handle_none(trades.get_trade(trade_id))
     check_access(trade["responder_id"])
     trades.reject_trade(trade_id)
+    flash(f"Trade {trade_id} rejected!")
     return redirect("/my_trades")
 
 @app.route("/trade/<int:trade_id>/cancel", methods=["POST"])
@@ -68,6 +71,7 @@ def cancel_trade(trade_id):
     trade = handle_none(trades.get_trade(trade_id))
     check_access(trade["requester_id"])
     trades.cancel_trade(trade_id)
+    flash(f"Trade {trade_id} canceled!")
     return redirect("/my_trades")
 
 @app.route("/my_trades")
@@ -100,7 +104,9 @@ def submit_trade():
         for offer in offer_pokemon:
             trades.add_pokemon(trade_id, offer["id"], offer["name"], "requester")
     except Exception as e:
-        return f"VIRHE: {e}"
+        flash(f"ERROR: {e}")
+        return redirect("/my_trades")
+    flash("Trade proposal successfully submitted!")
     return redirect("/my_trades")
 
 @app.route("/trading/<int:pokemon_id>")
@@ -191,7 +197,10 @@ def update_pokemon(pokemon_id):
             abort(403)
         pokemon.set_nickname(nickname, pokemon_id)
 
-    if new_stat and new_stat.strip() != "" and new_stat_value:
+    if new_stat and new_stat.strip() != "":
+        if not new_stat_value:
+            flash("ERROR: You must provide a value for a new skill!")
+            return redirect(f"/my_pokemon/edit_pokemon/{pokemon_id}")
         if len(new_stat) > 20:
             abort(403)
         try:
@@ -199,10 +208,11 @@ def update_pokemon(pokemon_id):
             if new_stat_value > 200:
                 raise ValueError
         except ValueError:
-            print("Tilaston arvon oltava kokonaisluku ja enintään 200!") # Pitää muuttaa flash():ksi devauksen edetessä
+            flash("ERROR: Value must be an integer with maximum value of 200!")
             return redirect(f"/my_pokemon/edit_pokemon/{pokemon_id}")
 
         pokemon.add_stat(pokemon_id, new_stat, new_stat_value)
+    flash(f"{result['name']} successfully updated!")
     return redirect(f"/my_pokemon/edit_pokemon/{pokemon_id}")
 
 @app.route("/my_pokemon/delete/<int:pokemon_id>", methods=["POST"])
@@ -212,6 +222,7 @@ def delete_pokemon(pokemon_id):
     result = handle_none(pokemon.get_pokemon_by_id(pokemon_id))
     check_access(result["owner_id"])
     pokemon.remove_pokemon(pokemon_id)
+    flash(f"{result['name']} successfully deleted!")
     return redirect("/my_pokemon/")
 
 @app.route("/my_pokemon/delete_stat/<int:pokemon_id>/<int:stat_id>", methods=["POST"])
@@ -221,6 +232,7 @@ def delete_stat(pokemon_id, stat_id):
     result = handle_none(pokemon.get_pokemon_by_id(pokemon_id))
     check_access(result["owner_id"])
     pokemon.remove_stat(stat_id)
+    flash(f"A skill successfully removed!")
     return redirect(f"/my_pokemon/edit_pokemon/{pokemon_id}")
 
 @app.route("/capture_pokemon/<string:pokemon_name>", methods=["POST"])
@@ -256,8 +268,10 @@ def capture_pokemon(pokemon_name):
         except Exception as e:
             return f"VIRHE: {e}"
 
+        flash(f"{pokemon_name.capitalize()} successfully captured ({datetime.now().strftime('%H:%M:%S')})!")
         session["capture_result"] = True
     else:
+        flash(f"DARN IT! {pokemon_name.capitalize()} escaped! Try again. ({datetime.now().strftime('%H:%M:%S')})")
         session["capture_result"] = False
     return redirect(f"/inspect/{pokemon_name}")
 
@@ -316,14 +330,17 @@ def create():
     password1 = request.form["password1"]
     password2 = request.form["password2"]
     if password1 != password2:
-        return "VIRHE: salasanat eivät ole samat"
+        flash("ERROR: Passwords do not match")
+        return redirect("/register")
 
     try:
         users.create_user(username, password1)
     except sqlite3.IntegrityError:
-        return "VIRHE: tunnus on jo varattu"
+        flash("ERROR: Username is already taken")
+        return redirect("/register")
 
-    return "Tunnus luotu"
+    flash("Account successfully created!")
+    return redirect("/login")
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
@@ -341,7 +358,7 @@ def login():
             session["csrf_token"] = secrets.token_hex(16)
             return redirect("/")
         else:
-            print("VIRHE: väärä tunnus tai salasana") # flashiksi kehityksen edetessä
+            flash("ERROR: Wrong username or password")
             return redirect("/login")
 
     return redirect("/")
