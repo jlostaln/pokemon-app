@@ -3,6 +3,7 @@
 
 <head>
   <title>{% block title %}{% endblock %}</title>
+  <link rel="stylesheet" href="/static/main.css">
 </head>
 
 <body>
@@ -30,8 +31,8 @@
     </p>
   </div>
 
-  {% for message in get_flashed_messages() %}
-  <div class="info">
+  {% for category, message in get_flashed_messages(with_categories=true) %}
+  <div class={{ category }}>
     {{ message }}
   </div>
   {% endfor %}

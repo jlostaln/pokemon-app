@@ -1,0 +1,30 @@
+body {
+  margin: auto;
+  max-width: 50em;
+  font-family: sans-serif;
+}
+
+.info {
+  border: 2px solid black;
+  margin: 1em;
+  padding: 0.5em;
+  background-color: blue;
+  color: white;
+}
+
+.error {
+  border: 2px solid black;
+  margin: 1em;
+  padding: 0.5em;
+  background-color: red;
+  color: white;
+}
+
+.success {
+  border: 2px solid black;
+  margin: 1em;
+  padding: 0.5em;
+  background-color: green;
+  color: white;
+}
+

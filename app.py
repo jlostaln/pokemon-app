@@ -51,7 +51,7 @@ def accept_trade(trade_id):
     requester_id = trade["requester_id"]
     responder_id = trade["responder_id"]
     trades.accept_trade(trade_id, requester_id, responder_id)
-    flash(f"Trade {trade_id} accepted! Deal is now completed.")
+    flash(f"Trade {trade_id} accepted! Deal is now completed.", "success")
     return redirect("/my_trades")
 
 @app.route("/trade/<int:trade_id>/reject", methods=["POST"])
@@ -61,7 +61,7 @@ def reject_trade(trade_id):
     trade = handle_none(trades.get_trade(trade_id))
     check_access(trade["responder_id"])
     trades.reject_trade(trade_id)
-    flash(f"Trade {trade_id} rejected!")
+    flash(f"Trade {trade_id} rejected!", "success")
     return redirect("/my_trades")
 
 @app.route("/trade/<int:trade_id>/cancel", methods=["POST"])
@@ -71,7 +71,7 @@ def cancel_trade(trade_id):
     trade = handle_none(trades.get_trade(trade_id))
     check_access(trade["requester_id"])
     trades.cancel_trade(trade_id)
-    flash(f"Trade {trade_id} canceled!")
+    flash(f"Trade {trade_id} canceled!", "success")
     return redirect("/my_trades")
 
 @app.route("/my_trades")
@@ -104,9 +104,9 @@ def submit_trade():
         for offer in offer_pokemon:
             trades.add_pokemon(trade_id, offer["id"], offer["name"], "requester")
     except Exception as e:
-        flash(f"ERROR: {e}")
+        flash(f"ERROR: {e}", "error")
         return redirect("/my_trades")
-    flash("Trade proposal successfully submitted!")
+    flash("Trade proposal successfully submitted!", "success")
     return redirect("/my_trades")
 
 @app.route("/trading/<int:pokemon_id>")
@@ -199,7 +199,7 @@ def update_pokemon(pokemon_id):
 
     if new_stat and new_stat.strip() != "":
         if not new_stat_value:
-            flash("ERROR: You must provide a value for a new skill!")
+            flash("You must provide a value for a new skill!", "error")
             return redirect(f"/my_pokemon/edit_pokemon/{pokemon_id}")
         if len(new_stat) > 20:
             abort(403)
@@ -208,11 +208,11 @@ def update_pokemon(pokemon_id):
             if new_stat_value > 200:
                 raise ValueError
         except ValueError:
-            flash("ERROR: Value must be an integer with maximum value of 200!")
+            flash("Value must be an integer with maximum value of 200!", "error")
             return redirect(f"/my_pokemon/edit_pokemon/{pokemon_id}")
 
         pokemon.add_stat(pokemon_id, new_stat, new_stat_value)
-    flash(f"{result['name']} successfully updated!")
+    flash(f"{result['name']} successfully updated!", "success")
     return redirect(f"/my_pokemon/edit_pokemon/{pokemon_id}")
 
 @app.route("/my_pokemon/delete/<int:pokemon_id>", methods=["POST"])
@@ -222,7 +222,7 @@ def delete_pokemon(pokemon_id):
     result = handle_none(pokemon.get_pokemon_by_id(pokemon_id))
     check_access(result["owner_id"])
     pokemon.remove_pokemon(pokemon_id)
-    flash(f"{result['name']} successfully deleted!")
+    flash(f"{result['name']} successfully deleted!", "success")
     return redirect("/my_pokemon/")
 
 @app.route("/my_pokemon/delete_stat/<int:pokemon_id>/<int:stat_id>", methods=["POST"])
@@ -232,7 +232,7 @@ def delete_stat(pokemon_id, stat_id):
     result = handle_none(pokemon.get_pokemon_by_id(pokemon_id))
     check_access(result["owner_id"])
     pokemon.remove_stat(stat_id)
-    flash(f"A skill successfully removed!")
+    flash("A skill successfully removed!", "success")
     return redirect(f"/my_pokemon/edit_pokemon/{pokemon_id}")
 
 @app.route("/capture_pokemon/<string:pokemon_name>", methods=["POST"])
@@ -268,10 +268,10 @@ def capture_pokemon(pokemon_name):
         except Exception as e:
             return f"VIRHE: {e}"
 
-        flash(f"{pokemon_name.capitalize()} successfully captured ({datetime.now().strftime('%H:%M:%S')})!")
+        flash(f"{pokemon_name.capitalize()} successfully captured! ({datetime.now().strftime('%H:%M:%S')})", "success")
         session["capture_result"] = True
     else:
-        flash(f"DARN IT! {pokemon_name.capitalize()} escaped! Try again. ({datetime.now().strftime('%H:%M:%S')})")
+        flash(f"DARN IT! {pokemon_name.capitalize()} escaped! Try again. ({datetime.now().strftime('%H:%M:%S')})", "error")
         session["capture_result"] = False
     return redirect(f"/inspect/{pokemon_name}")
 
@@ -330,16 +330,16 @@ def create():
     password1 = request.form["password1"]
     password2 = request.form["password2"]
     if password1 != password2:
-        flash("ERROR: Passwords do not match")
+        flash("Passwords do not match", "error")
         return redirect("/register")
 
     try:
         users.create_user(username, password1)
     except sqlite3.IntegrityError:
-        flash("ERROR: Username is already taken")
+        flash("Username is already taken", "error")
         return redirect("/register")
 
-    flash("Account successfully created!")
+    flash(f"Account for username {username} was successfully created!", "success")
     return redirect("/login")
 
 @app.route("/login", methods=["GET", "POST"])
@@ -356,9 +356,10 @@ def login():
             session["user_id"] = user_id
             session["username"] = username
             session["csrf_token"] = secrets.token_hex(16)
+            flash("You are logged in", "info")
             return redirect("/")
         else:
-            flash("ERROR: Wrong username or password")
+            flash("Wrong username or password", "error")
             return redirect("/login")
 
     return redirect("/")
@@ -367,4 +368,5 @@ def login():
 def logout():
     del session["user_id"]
     del session["username"]
+    flash("You are logged out", "info")
     return redirect("/")
