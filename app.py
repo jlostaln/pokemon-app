@@ -197,9 +197,13 @@ def update_pokemon(pokemon_id):
             abort(403)
         pokemon.set_nickname(nickname, pokemon_id)
 
+    if new_stat_value and not new_stat:
+        flash("A new skill must have a name", "error")
+        return redirect(f"/my_pokemon/edit_pokemon/{pokemon_id}")
+
     if new_stat and new_stat.strip() != "":
         if not new_stat_value:
-            flash("You must provide a value for a new skill!", "error")
+            flash("You must provide a value for a new skill", "error")
             return redirect(f"/my_pokemon/edit_pokemon/{pokemon_id}")
         if len(new_stat) > 20:
             abort(403)
@@ -208,7 +212,7 @@ def update_pokemon(pokemon_id):
             if new_stat_value > 200:
                 raise ValueError
         except ValueError:
-            flash("Value must be an integer with maximum value of 200!", "error")
+            flash("Value must be an integer with maximum value of 200", "error")
             return redirect(f"/my_pokemon/edit_pokemon/{pokemon_id}")
 
         pokemon.add_stat(pokemon_id, new_stat, new_stat_value)
@@ -269,10 +273,8 @@ def capture_pokemon(pokemon_name):
             return f"VIRHE: {e}"
 
         flash(f"{pokemon_name.capitalize()} successfully captured! ({datetime.now().strftime('%H:%M:%S')})", "success")
-        session["capture_result"] = True
     else:
         flash(f"DARN IT! {pokemon_name.capitalize()} escaped! Try again. ({datetime.now().strftime('%H:%M:%S')})", "error")
-        session["capture_result"] = False
     return redirect(f"/inspect/{pokemon_name}")
 
 @app.route("/inspect/<string:pokemon_name>")

@@ -14,28 +14,34 @@
 </form>
 
 <hr>
-{% for pokemon in pokemons %}
-<div class="pokemon">
-    <h3>{{ pokemon.name }}</h3>
-  <img src="{{ pokemon.sprite }}" alt="{{ pokemon.name }} sprite">
-  <br />
+<div class="pokemon-container">
+  {% for pokemon in pokemons %}
+  <div class="pokemon">
+      {% if session.user_id != pokemon.owner_id %}
+    <h2><a href="/trading/{{ pokemon.id }}">Make offer</a></h2>
+      {% else %}
+      <p>You own this Pokémon</p>
+      {% endif %}
+      {% if pokemon.nickname %}
+      <h3>{{ pokemon.name }} a.k.a. {{ pokemon.nickname }}</h3>
+      {% else %}
+      <h3>{{ pokemon.name }}</h3>
+      {% endif %}
+    <img src="{{ pokemon.sprite }}" alt="{{ pokemon.name }} sprite">
+    <br />
 
-  <ul>
-    <li>Name: {{ pokemon.name }}</li>
-    <li>Owner: {{ pokemon.username }}</li>
-    {% if pokemon.nickname %}
-    <li>Nickname: {{ pokemon.nickname }} </li>
-    {% endif %}
-    <li>Type: {{ pokemon.types }}</li>
-    <li>Description: {{ pokemon.flavor_text }}</li>
-    {% if session.user_id != pokemon.owner_id %}
-    <a href="/trading/{{ pokemon.id }}">Make offer</a>
-    {% else %}
-    <p>You own this Pokémon</p>
-    {% endif %}
-  </ul>
-  <br/>
+    <ul>
+      <li>Name: {{ pokemon.name }}</li>
+      <li>Owner: {{ pokemon.username }}</li>
+      {% if pokemon.nickname %}
+      <li>Nickname: {{ pokemon.nickname }} </li>
+      {% endif %}
+      <li>Type: {{ pokemon.types }}</li>
+    </ul>
+    <h4>Description:</h4>
+      <p>{{ pokemon.flavor_text }}</p>
+    <br/>
+  </div>
+  {% endfor %}
 </div>
-<hr>
-{% endfor %}
 {% endblock %}

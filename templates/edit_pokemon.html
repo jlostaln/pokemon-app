@@ -7,6 +7,11 @@
 
 
 <div class="pokemon">
+  {% if pokemon.nickname %}
+  <h3>{{ pokemon.name }} a.k.a. {{ pokemon.nickname }}</h3>
+  {% else %}
+  <h3>{{ pokemon.name }}</h3>
+  {% endif %}
   <img src="{{ pokemon.sprite }}" alt="{{ pokemon.name }} sprite">
   <br />
   <p>Name: {{ pokemon.name }}</p>
@@ -17,14 +22,13 @@
 
     <p>Type: {{ pokemon.types }}</p>
     <p>Next evolution: {{ pokemon.next_evolution }}</p>
-    <p>{{ pokemon.flavor_text }}</p>
-    <p>Add a new statistic/skill:</p>
-    <ul>
-      <li>
-        <input type="text" name="new_stat" placeholder="Skill name" maxlength="20">:
-        <input type="text" name="new_stat_value" placeholder="Skill value">
-      </li>
-    </ul>
+    <h4>Description:</h4>
+      <p>{{ pokemon.flavor_text }}</p>
+    <p>Add a new statistic/skill:
+      <br/>
+      <input type="text" style="width: 150px" name="new_stat" placeholder="Skill name" maxlength="20">:
+      <input type="text" style="width: 70px" name="new_stat_value" placeholder="Skill value" maxlength="3">
+    </p>
     <button type="submit">Save changes</button>
     <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}" />
   </form>
