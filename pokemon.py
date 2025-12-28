@@ -22,7 +22,7 @@ def get_pokemon_stats(pokemon_id):
     stats = db.query(sql, [pokemon_id])
     return stats
 
-def get_listed_pokemon(filter=None):
+def get_listed_pokemon(filter=None, owner_id=None):
     sql = '''SELECT pokemon.id,
                     pokemon.owner_id,
                     users.username,
@@ -50,6 +50,11 @@ def get_listed_pokemon(filter=None):
                                 AND pokemon_types.type LIKE ?))'''
         like = "%" + filter + "%"
         params.extend([like, like])
+
+    if owner_id:
+        sql += '''AND pokemon.owner_id != ?'''
+        params.append(owner_id)
+
     sql += '''
             GROUP BY pokemon.id
             ORDER BY pokemon.id DESC'''

@@ -8,6 +8,10 @@
   <p>
     <label for="query">Keyword</label>:
     <input type="text" name="query" id="query" value="{{ query if query }}" placeholder="Name or type">
+    <label>
+      <input type="checkbox" name="exclude_owner" value="1" {% if exclude_owner %} checked {% endif %}>
+      Exclude your own listings
+    </label>
   </p>
   <input type="submit" value="Filter">
   <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}" />

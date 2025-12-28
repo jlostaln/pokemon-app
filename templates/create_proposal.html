@@ -11,24 +11,26 @@
 
   <h3>Target Pokémon</h3>
 
-  <div class="pokemon">
-      {% if requested_pokemon.nickname %}
-      <h3>{{ requested_pokemon.name }} a.k.a. {{ requested_pokemon.nickname }}</h3>
-      {% else %}
-      <h3>{{ requested_pokemon.name }}</h3>
-      {% endif %}
-    <img src="{{ requested_pokemon.sprite }}" alt="{{ requested_pokemon.name }} sprite">
-    <br />
+  <div class="pokemon-container">
+    <div class="pokemon">
+        {% if requested_pokemon.nickname %}
+        <h3>{{ requested_pokemon.name }} a.k.a. {{ requested_pokemon.nickname }}</h3>
+        {% else %}
+        <h3>{{ requested_pokemon.name }}</h3>
+        {% endif %}
+      <img src="{{ requested_pokemon.sprite }}" alt="{{ requested_pokemon.name }} sprite">
+      <br />
 
-    <ul>
-      <li>Name: {{ requested_pokemon.name }}</li>
-      {% if requested_pokemon.nickname %}
-      <li>Nickname: {{ requested_pokemon.nickname }} </li>
-      {% endif %}
-      <li>Type: {{ requested_pokemon.types }}</li>
-    </ul>
-    <br/>
-     <input type="hidden" name="requested_pokemon_id" value="{{ requested_pokemon.id }}">
+      <ul>
+        <li>Name: {{ requested_pokemon.name }}</li>
+        {% if requested_pokemon.nickname %}
+        <li>Nickname: {{ requested_pokemon.nickname }} </li>
+        {% endif %}
+        <li>Type: {{ requested_pokemon.types }}</li>
+      </ul>
+      <br/>
+       <input type="hidden" name="requested_pokemon_id" value="{{ requested_pokemon.id }}">
+    </div>
   </div>
 
   <hr>

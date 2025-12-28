@@ -127,8 +127,12 @@ def trade_view(pokemon_id):
 def view_trade_listings():
     require_login()
     query = request.args.get("query")
-    result = pokemon.get_listed_pokemon(query)
-    return render_template("/trading.html", pokemons=result, query=query)
+    exclude_owner = request.args.get("exclude_owner")
+    if exclude_owner == "1":
+        result = pokemon.get_listed_pokemon(query, session["user_id"])
+    else:
+        result = pokemon.get_listed_pokemon(query)
+    return render_template("/trading.html", pokemons=result, query=query, exclude_owner=exclude_owner)
 
 @app.route("/my_pokemon/")
 def my_pokemon():
