@@ -19,7 +19,7 @@ def check_login(username, password):
     else:
         return None
 
-def get_my_pokemon(owner_id):
+def get_my_pokemon(owner_id, filter=None):
     sql = '''SELECT pokemon.id,
                     pokemon.owner_id,
                     pokemon.name,
@@ -33,10 +33,25 @@ def get_my_pokemon(owner_id):
                     ON pokemon.id = pokemon_types.pokemon_id
             LEFT JOIN pokemon_status
                     ON pokemon.id = pokemon_status.pokemon_id
-            WHERE pokemon.owner_id = ?
+            WHERE pokemon.owner_id = ?'''
+
+    params = [owner_id]
+
+    if filter:
+        sql += '''
+            AND (pokemon.name LIKE ?
+                    OR EXISTS ( SELECT 1
+                                FROM pokemon_types
+                                WHERE pokemon_types.pokemon_id = pokemon.id
+                                AND pokemon_types.type LIKE ?))'''
+        like = "%" + filter + "%"
+        params.extend([like, like])
+
+    sql += '''
             GROUP BY pokemon.id
             ORDER BY pokemon.id DESC'''
-    result = db.query(sql, [owner_id])
+
+    result = db.query(sql, params)
     return result
 
 def get_my_pokemon_by_type(owner_id, pokemon_type):

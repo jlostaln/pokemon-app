@@ -128,7 +128,7 @@ def view_trade_listings():
     require_login()
     query = request.args.get("query")
     exclude_owner = request.args.get("exclude_owner")
-    if exclude_owner == "1":
+    if exclude_owner:
         result = pokemon.get_listed_pokemon(query, session["user_id"])
     else:
         result = pokemon.get_listed_pokemon(query)
@@ -137,10 +137,11 @@ def view_trade_listings():
 @app.route("/my_pokemon/")
 def my_pokemon():
     require_login()
+    query = request.args.get("query")
     owner_id = session["user_id"]
-    result = users.get_my_pokemon(owner_id)
+    result = users.get_my_pokemon(owner_id, query)
     statuses = pokemon.get_all_statuses()
-    return render_template("/my_pokemon.html", pokemons=result, statuses=statuses)
+    return render_template("/my_pokemon.html", pokemons=result, statuses=statuses, query=query)
 
 @app.route("/my_pokemon/change_status/<int:pokemon_id>", methods=["POST"])
 def change_status(pokemon_id):
@@ -167,7 +168,7 @@ def my_pokemon_by_type(pokemon_type):
     owner_id = session["user_id"]
     result = users.get_my_pokemon_by_type(owner_id, pokemon_type)
     statuses = pokemon.get_all_statuses()
-    return render_template("/my_pokemon.html", pokemons=result, statuses=statuses)
+    return render_template("/my_pokemon.html", pokemons=result, statuses=statuses, query=pokemon_type)
 
 @app.route("/my_pokemon/stats/")
 def my_pokemon_stats():

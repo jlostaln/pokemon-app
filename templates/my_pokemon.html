@@ -4,6 +4,13 @@
 
 {% block content %}
 <h2>My Pokémon</h2>
+<form action="/my_pokemon/" method="get">
+  <p>
+    <label for="query">Keyword</label>:
+    <input type="text" name="query" id="query" value="{{ query if query }}" placeholder="Name or type">
+  </p>
+  <input type="submit" value="Filter">
+</form>
 
 <div class="pokemon-container">
   {% for pokemon in pokemons %}
