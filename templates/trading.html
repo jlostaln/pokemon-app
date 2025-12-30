@@ -15,13 +15,25 @@
   </p>
   <input type="submit" value="Filter">
 </form>
+<br />
+<hr />
+<p>
+  {% if page > 1 %}
+  <a href="/trading/{{ page - 1 }}{% if query %}?query={{ query }}{% endif %}">&lt;&lt;</a>
+  {% else %}
+  <span style="visibility:hidden">&lt;&lt;</span>
+  {% endif %}
+  Page {{ page }}/{{ page_count }}
+  {% if page < page_count %}
+  <a href="/trading/{{ page + 1 }}{% if query %}?query={{ query }}{% endif %}">&gt;&gt;</a>
+  {% endif %}
+</p>
 
-<hr>
 <div class="pokemon-container">
   {% for pokemon in pokemons %}
   <div class="pokemon">
       {% if session.user_id != pokemon.owner_id %}
-    <h2><a href="/trading/{{ pokemon.id }}">Make offer</a></h2>
+    <h2><a href="/trading/make_offer/{{ pokemon.id }}">Make offer</a></h2>
       {% else %}
       <p>You own this Pokémon</p>
       {% endif %}

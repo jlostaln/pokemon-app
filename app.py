@@ -1,8 +1,10 @@
+import math
+import time
 from datetime import datetime
 import secrets
 import sqlite3
 from flask import Flask
-from flask import render_template, request, redirect, session, abort, flash
+from flask import render_template, request, redirect, session, abort, flash, g
 import users
 import config
 import db
@@ -52,7 +54,13 @@ def accept_trade(trade_id):
     responder_id = trade["responder_id"]
     trades.accept_trade(trade_id, requester_id, responder_id)
     flash(f"Trade {trade_id} accepted! Deal is now completed.", "success")
-    return redirect("/my_trades")
+    query = request.form.get("query")
+    page = request.form.get("page")
+    if not page:
+        page = 1
+    if query:
+        return redirect(f"/my_trades/{page}?query={query}")
+    return redirect(f"/my_trades/{page}")
 
 @app.route("/trade/<int:trade_id>/reject", methods=["POST"])
 def reject_trade(trade_id):
@@ -62,7 +70,13 @@ def reject_trade(trade_id):
     check_access(trade["responder_id"])
     trades.reject_trade(trade_id)
     flash(f"Trade {trade_id} rejected!", "success")
-    return redirect("/my_trades")
+    query = request.form.get("query")
+    page = request.form.get("page")
+    if not page:
+        page = 1
+    if query:
+        return redirect(f"/my_trades/{page}?query={query}")
+    return redirect(f"/my_trades/{page}")
 
 @app.route("/trade/<int:trade_id>/cancel", methods=["POST"])
 def cancel_trade(trade_id):
@@ -72,15 +86,34 @@ def cancel_trade(trade_id):
     check_access(trade["requester_id"])
     trades.cancel_trade(trade_id)
     flash(f"Trade {trade_id} canceled!", "success")
-    return redirect("/my_trades")
+    query = request.form.get("query")
+    page = request.form.get("page")
+    if not page:
+        page = 1
+    if query:
+        return redirect(f"/my_trades/{page}?query={query}")
+    return redirect(f"/my_trades/{page}")
 
-@app.route("/my_trades")
-def my_trades():
+@app.route("/my_trades/")
+@app.route("/my_trades/<int:page>")
+def my_trades(page=1):
     require_login()
     user_id = session["user_id"]
     query = request.args.get("query")
-    transactions = trades.get_user_trades(user_id, query)
-    return render_template("my_trades.html", transactions=transactions, query=query)
+    page_size = 3
+    trade_count = trades.get_user_trade_count(user_id, query)
+    page_count = max(math.ceil(trade_count /  page_size), 1)
+
+
+    if page < 1:
+        return redirect("/my_trades/1")
+    if page > page_count:
+        if query:
+            return redirect(f"/my_trades/{page_count}?query={query}")
+        return redirect(f"/my_trades/{page_count}")
+
+    transactions = trades.get_user_trades(user_id, page, page_size, query)
+    return render_template("my_trades.html", transactions=transactions, query=query, page=page, page_count=page_count)
 
 @app.route("/submit_request", methods=["POST"])
 def submit_trade():
@@ -109,7 +142,7 @@ def submit_trade():
     flash("Trade proposal successfully submitted!", "success")
     return redirect("/my_trades")
 
-@app.route("/trading/<int:pokemon_id>")
+@app.route("/trading/make_offer/<int:pokemon_id>")
 def trade_view(pokemon_id):
     require_login()
     requester_id = session["user_id"]
@@ -120,28 +153,50 @@ def trade_view(pokemon_id):
     if pokemon_status != "Listattu":
         abort(404)
 
-    requester_pokemon = users.get_my_pokemon(requester_id)
+    # TODO: checkboxes to work with multi-page layout (e.g. include pokemon from page 1 and 2 in the offer)
+    requester_pokemon = users.get_my_pokemon(requester_id, 1, 100)
     return render_template("create_proposal.html", requested_pokemon=requested_pokemon, requester_pokemon=requester_pokemon)
 
 @app.route("/trading/")
-def view_trade_listings():
+@app.route("/trading/<int:page>")
+def view_trade_listings(page=1):
     require_login()
     query = request.args.get("query")
     exclude_owner = request.args.get("exclude_owner")
+    page_size = 9
+    pokemon_count = pokemon.get_listed_pokemon_count(query, exclude_owner)
+    page_count = max(math.ceil(pokemon_count /  page_size), 1)
+
+    if page < 1:
+        return redirect("/trading/1")
+    if page > page_count:
+        return redirect("/trading/" + str(page_count))
+
+    owner_to_excluded = None
     if exclude_owner:
-        result = pokemon.get_listed_pokemon(query, session["user_id"])
-    else:
-        result = pokemon.get_listed_pokemon(query)
-    return render_template("/trading.html", pokemons=result, query=query, exclude_owner=exclude_owner)
+        owner_to_excluded = session["user_id"]
+    result = pokemon.get_listed_pokemon(page, page_size, query, owner_to_excluded)
+
+    return render_template("/trading.html", pokemons=result, query=query, exclude_owner=exclude_owner, page=page, page_count=page_count)
 
 @app.route("/my_pokemon/")
-def my_pokemon():
+@app.route("/my_pokemon/<int:page>")
+def my_pokemon(page=1):
     require_login()
     query = request.args.get("query")
     owner_id = session["user_id"]
-    result = users.get_my_pokemon(owner_id, query)
+    page_size = 9
+    pokemon_count = users.get_my_pokemon_count(owner_id, query)
+    page_count = max(math.ceil(pokemon_count /  page_size), 1)
+
+    if page < 1:
+        return redirect("/my_pokemon/1")
+    if page > page_count:
+        return redirect("/my_pokemon/" + str(page_count))
+
+    result = users.get_my_pokemon(owner_id, page, page_size, query)
     statuses = pokemon.get_all_statuses()
-    return render_template("/my_pokemon.html", pokemons=result, statuses=statuses, query=query)
+    return render_template("/my_pokemon.html", pokemons=result, statuses=statuses, query=query, page=page, page_count=page_count)
 
 @app.route("/my_pokemon/change_status/<int:pokemon_id>", methods=["POST"])
 def change_status(pokemon_id):
@@ -177,7 +232,6 @@ def my_pokemon_stats():
     count = handle_none(users.get_pokemon_count(owner_id))
     count_by_type = users.get_pokemon_count_by_type(owner_id)
     return render_template("/my_stats.html", count=count, count_by_type=count_by_type)
-
 
 @app.route("/my_pokemon/edit_pokemon/<int:pokemon_id>")
 def edit_pokemon(pokemon_id):
@@ -377,3 +431,13 @@ def logout():
     del session["username"]
     flash("You are logged out", "info")
     return redirect("/")
+
+@app.before_request
+def before_request():
+    g.start_time = time.time()
+
+@app.after_request
+def after_request(response):
+    elapsed_time = round(time.time() - g.start_time, 2)
+    print("elapsed time:", elapsed_time, "s")
+    return response

@@ -22,7 +22,32 @@ def get_pokemon_stats(pokemon_id):
     stats = db.query(sql, [pokemon_id])
     return stats
 
-def get_listed_pokemon(filter=None, owner_id=None):
+def get_listed_pokemon_count(filter=None, owner_id=None):
+    sql = '''SELECT count(*)
+            FROM pokemon
+            WHERE pokemon.id in ( SELECT pokemon_id
+                                FROM pokemon_status
+                                WHERE value = ?)'''
+    params = ['Listattu']
+
+    if filter:
+        sql += '''
+            AND (pokemon.name LIKE ?
+                    OR EXISTS ( SELECT 1
+                                FROM pokemon_types
+                                WHERE pokemon_types.pokemon_id = pokemon.id
+                                AND pokemon_types.type LIKE ?))'''
+        like = "%" + filter + "%"
+        params.extend([like, like])
+
+    if owner_id:
+        sql += '''AND pokemon.owner_id != ?'''
+        params.append(owner_id)
+
+    result = db.query(sql, params)[0][0]
+    return result
+
+def get_listed_pokemon(page, page_size, filter=None, owner_id=None):
     sql = '''SELECT pokemon.id,
                     pokemon.owner_id,
                     users.username,
@@ -57,7 +82,13 @@ def get_listed_pokemon(filter=None, owner_id=None):
 
     sql += '''
             GROUP BY pokemon.id
-            ORDER BY pokemon.id DESC'''
+            ORDER BY pokemon.id DESC
+            LIMIT ? OFFSET ?'''
+
+    limit = page_size
+    offset = page_size * (page - 1)
+    params.extend([limit, offset])
+
     result = db.query(sql, params)
     return result
 

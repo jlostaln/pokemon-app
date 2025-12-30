@@ -5,15 +5,28 @@
 {% block content %}
 <h2>My Trades</h2>
 
-<form action="/my_trades" method="get">
+<form action="/my_trades/" method="get">
   <p>
     <label for="query">Trade status (pending | rejected | completed)</label>:
     <input type="text" name="query" id="query" value="{{ query if query }}" placeholder="status LIKE...">
   </p>
   <input type="submit" value="Filter">
 </form>
+<br />
+<hr />
 
-  <hr>
+<p>
+  {% if page > 1 %}
+  <a href="/my_trades/{{ page - 1 }}{% if query %}?query={{ query }}{% endif %}">&lt;&lt;</a>
+  {% else %}
+  <span style="visibility:hidden">&lt;&lt;</span>
+  {% endif %}
+  Page {{ page }}/{{ page_count }}
+  {% if page < page_count %}
+  <a href="/my_trades/{{ page + 1 }}{% if query %}?query={{ query }}{% endif %}">&gt;&gt;</a>
+  {% endif %}
+</p>
+
 {% for trade_id, trade_rows in transactions|groupby("trade_id")|reverse %}
 <h3>Trade {{ trade_id }}</h3>
 <p>Status: {{ trade_rows[0].status }}</p>
@@ -64,15 +77,21 @@
 {% if trade_rows[0].status == "pending" %}
   {% if session.user_id == trade_rows[0].responder_id %}
     <form method="post" action="/trade/{{ trade_id }}/accept">
+      <input type="hidden" name="query" value="{{ query or '' }}">
+      <input type="hidden" name="page" value="{{ page or '' }}">
       <button type="submit">Accept</button>
       <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}" />
     </form>
     <form method="post" action="/trade/{{ trade_id }}/reject">
+      <input type="hidden" name="query" value="{{ query or '' }}">
+      <input type="hidden" name="page" value="{{ page or '' }}">
       <button type="submit">Reject</button>
       <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}" />
     </form>
   {% elif session.user_id == trade_rows[0].requester_id %}
     <form method="post" action="/trade/{{ trade_id }}/cancel">
+      <input type="hidden" name="query" value="{{ query or '' }}">
+      <input type="hidden" name="page" value="{{ page or '' }}">
       <button type="submit">Cancel</button>
       <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}" />
     </form>

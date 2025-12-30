@@ -72,3 +72,25 @@ CREATE TABLE trade_history (
   status TEXT CHECK(status IN ('pending', 'rejected', 'accepted', 'completed')),
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE INDEX idx_users_username ON users(username);
+
+CREATE INDEX idx_pokemon_owner_id ON pokemon(owner_id);
+CREATE INDEX idx_pokemon_name ON pokemon(name);
+
+CREATE INDEX idx_pokemon_types_pokemon_id ON pokemon_types(pokemon_id);
+CREATE INDEX idx_pokemon_types_type ON pokemon_types(type);
+
+CREATE INDEX idx_pokemon_status_pokemon_id ON pokemon_status(pokemon_id);
+CREATE INDEX idx_pokemon_status_value ON pokemon_status(value);
+
+CREATE INDEX idx_pokemon_stats_pokemon_id ON pokemon_stats(pokemon_id);
+
+CREATE INDEX idx_trades_requester_id ON trades(requester_id);
+CREATE INDEX idx_trades_responder_id ON trades(responder_id);
+CREATE INDEX idx_trades_status ON trades(status);
+
+CREATE INDEX idx_trade_pokemon_trade_id ON trade_pokemon(trade_id);
+CREATE INDEX idx_trade_pokemon_pokemon_id ON trade_pokemon(pokemon_id);
+
+CREATE INDEX idx_trade_history_trade_id ON trade_history(trade_id);

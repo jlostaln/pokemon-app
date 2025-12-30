@@ -11,6 +11,19 @@
   </p>
   <input type="submit" value="Filter">
 </form>
+<br />
+<hr />
+<p>
+  {% if page > 1 %}
+  <a href="/my_pokemon/{{ page - 1 }}{% if query %}?query={{ query }}{% endif %}">&lt;&lt;</a>
+  {% else %}
+  <span style="visibility:hidden">&lt;&lt;</span>
+  {% endif %}
+  Page {{ page }}/{{ page_count }}
+  {% if page < page_count %}
+  <a href="/my_pokemon/{{ page + 1 }}{% if query %}?query={{ query }}{% endif %}">&gt;&gt;</a>
+  {% endif %}
+</p>
 
 <div class="pokemon-container">
   {% for pokemon in pokemons %}

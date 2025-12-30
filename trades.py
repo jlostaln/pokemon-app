@@ -22,7 +22,21 @@ def get_trade(trade_id):
     trade = db.query(sql, [trade_id])
     return trade[0] if trade else None
 
-def get_user_trades(user_id, filter=None):
+def get_user_trade_count(user_id, filter=None):
+    sql = '''SELECT count(*)
+            FROM trades
+            WHERE (trades.requester_id = ?
+                    OR trades.responder_id = ?)'''
+    params = [user_id, user_id]
+
+    if filter:
+        sql += '''AND trades.status LIKE ?'''
+        like = "%" + filter + "%"
+        params.extend([like])
+
+    return db.query(sql, params)[0][0]
+
+def get_user_trades(user_id, page, page_size, filter=None):
     sql = '''SELECT trades.id as trade_id,
                     trades.requester_id,
                     trades.responder_id,
@@ -34,14 +48,24 @@ def get_user_trades(user_id, filter=None):
             FROM trades
             JOIN trade_pokemon
                   ON trades.id = trade_pokemon.trade_id
-            WHERE (trades.requester_id = ?
-                    OR trades.responder_id = ?)'''
+            WHERE trades.id in (SELECT id
+                                FROM trades
+                                WHERE (trades.requester_id = ? OR trades.responder_id = ?)'''
     params = [user_id, user_id]
 
     if filter:
-        sql += '''AND trades.status LIKE ?'''
+        sql += '''              AND trades.status LIKE ?'''
         like = "%" + filter + "%"
         params.extend([like])
+
+    sql += '''
+                                ORDER BY id DESC
+                                LIMIT ? OFFSET ?)
+            ORDER BY trades.id DESC'''
+
+    limit = page_size
+    offset = page_size * (page - 1)
+    params.extend([limit, offset])
 
     return db.query(sql, params)
 

@@ -19,7 +19,27 @@ def check_login(username, password):
     else:
         return None
 
-def get_my_pokemon(owner_id, filter=None):
+def get_my_pokemon_count(owner_id, filter=None):
+    sql = '''SELECT count(*)
+            FROM pokemon
+            WHERE pokemon.owner_id = ?'''
+
+    params = [owner_id]
+
+    if filter:
+        sql += '''
+            AND (pokemon.name LIKE ?
+                    OR EXISTS ( SELECT 1
+                                FROM pokemon_types
+                                WHERE pokemon_types.pokemon_id = pokemon.id
+                                AND pokemon_types.type LIKE ?))'''
+        like = "%" + filter + "%"
+        params.extend([like, like])
+
+    result = db.query(sql, params)[0][0]
+    return result
+
+def get_my_pokemon(owner_id, page, page_size, filter=None):
     sql = '''SELECT pokemon.id,
                     pokemon.owner_id,
                     pokemon.name,
@@ -49,7 +69,12 @@ def get_my_pokemon(owner_id, filter=None):
 
     sql += '''
             GROUP BY pokemon.id
-            ORDER BY pokemon.id DESC'''
+            ORDER BY pokemon.id DESC
+            LIMIT ? OFFSET ?'''
+
+    limit = page_size
+    offset = page_size * (page - 1)
+    params.extend([limit, offset])
 
     result = db.query(sql, params)
     return result
