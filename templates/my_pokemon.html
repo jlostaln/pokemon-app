@@ -27,7 +27,7 @@
 
 <div class="pokemon-container">
   {% for pokemon in pokemons %}
-  <div class="pokemon" id="pokemon-{{ pokemon.id }}">
+  <div class="pokemon" id="{{ pokemon.id }}">
     {% if pokemon.nickname %}
     <h3>{{ pokemon.name }} a.k.a. {{ pokemon.nickname }}</h3>
     {% else %}
@@ -40,7 +40,7 @@
     <ul>
       <li>Name: {{ pokemon.name }}</li>
       <li>
-        <form action="/my_pokemon/change_status/{{ pokemon.id }}#pokemon-{{ pokemon.id }}" method="post">
+        <form action="/my_pokemon/change_status/{{ pokemon.id }}" method="post">
           {% if pokemon.status %}
           <label for="status">Status: {{ pokemon.status}} </label>
           {% else %}
@@ -52,6 +52,8 @@
             <option value="{{ status.value }}">{{ status.value }}</option>
             {% endfor %}
           </select>
+            <input type="hidden" name="page" value="{{ page }}">
+            <input type="hidden" name="query" value="{{ query }}">
             <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}" />
         </form>
       </li>

@@ -7,7 +7,7 @@ from app import app
 USER_COUNT = 1000
 POKEMON_COUNT = 10**5
 TYPES = ["fire", "water", "grass", "electric", "psychic", "normal", "rock", "ground", "bug", "poison"]
-STATUS_VALUES = ["Listattu"]
+STATUS_VALUES = ["Listed for trading"]
 STATS = ["hp", "attack", "defense", "special-attack", "special-defence", "speed"]
 TRADE_COUNT = 10**5
 

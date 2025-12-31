@@ -28,7 +28,7 @@ def get_listed_pokemon_count(filter=None, owner_id=None):
             WHERE pokemon.id in ( SELECT pokemon_id
                                 FROM pokemon_status
                                 WHERE value = ?)'''
-    params = ['Listattu']
+    params = ['Listed for trading']
 
     if filter:
         sql += '''
@@ -64,7 +64,7 @@ def get_listed_pokemon(page, page_size, filter=None, owner_id=None):
             WHERE pokemon.id in ( SELECT pokemon_id
                                 FROM pokemon_status
                                 WHERE value = ?)'''
-    params = ['Listattu']
+    params = ['Listed for trading']
 
     if filter:
         sql += '''

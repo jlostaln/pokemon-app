@@ -104,7 +104,6 @@ def my_trades(page=1):
     trade_count = trades.get_user_trade_count(user_id, query)
     page_count = max(math.ceil(trade_count /  page_size), 1)
 
-
     if page < 1:
         return redirect("/my_trades/1")
     if page > page_count:
@@ -164,8 +163,6 @@ def trade_view(pokemon_id, page=1):
     for item in selections:
         if item["page"] != page:
             filtered.append(item)
-        if item in new_selections:
-            filtered.append(item)
     selected_ids = filtered
     for new_id in new_selections:
         if new_id not in selected_ids:
@@ -176,7 +173,7 @@ def trade_view(pokemon_id, page=1):
     if requested_pokemon["owner_id"] == requester_id:
         abort(403)
     _, pokemon_status = pokemon.get_pokemon_status(pokemon_id)
-    if pokemon_status != "Listattu":
+    if pokemon_status != "Listed for trading":
         abort(404)
     page_size = 9
     pokemon_count = users.get_my_pokemon_count(requester_id)
@@ -225,6 +222,8 @@ def view_trade_listings(page=1):
 def my_pokemon(page=1):
     require_login()
     query = request.args.get("query")
+    if not query:
+        query = ""
     owner_id = session["user_id"]
     page_size = 9
     pokemon_count = users.get_my_pokemon_count(owner_id, query)
@@ -246,6 +245,8 @@ def change_status(pokemon_id):
     target = handle_none(pokemon.get_pokemon_by_id(pokemon_id))
     check_access(target["owner_id"])
     status = request.form.get("status")
+    page = request.form.get("page")
+    query = request.form.get("query")
     status_rows = pokemon.get_all_statuses()
     all_statuses = []
     for row in status_rows:
@@ -254,9 +255,9 @@ def change_status(pokemon_id):
         abort(403)
     status_id, pokemon_status = pokemon.get_pokemon_status(pokemon_id)
     if status == pokemon_status:
-        return redirect(f"/my_pokemon#pokemon-{pokemon_id}")
+        return redirect(f"/my_pokemon/{page}?query={query}")
     pokemon.set_pokemon_status(status, status_id)
-    return redirect(f"/my_pokemon#pokemon-{pokemon_id}")
+    return redirect(f"/my_pokemon/{page}?query={query}")
 
 @app.route("/my_pokemon/stats/<string:pokemon_type>")
 def my_pokemon_by_type(pokemon_type):
