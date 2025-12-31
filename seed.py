@@ -48,10 +48,10 @@ for i in range(1, POKEMON_COUNT + 1):
     sprite = ""
 
     db.execute('''
-        INSERT INTO pokemon (name, owner_id, height, weight, base_experience,
+        INSERT INTO pokemon (name, owner_id, nickname, height, weight, base_experience,
                              next_evolution, flavor_text, sprite)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    ''', [name, owner_id, height, weight, base_exp, next_evo, flavor, sprite])
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ''', [name, owner_id, nickname, height, weight, base_exp, next_evo, flavor, sprite])
 
 print("Inserting Pokémon types...")
 for pokemon_id in range(1, POKEMON_COUNT + 1):

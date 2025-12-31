@@ -120,12 +120,18 @@ def submit_trade():
     require_login()
     check_csrf()
     target_pokemon_id = request.form.get("requested_pokemon_id")
-    offer_pokemon_ids = request.form.getlist("requester_pokemon_ids")
+    offer_pokemon_selections_json = request.form.getlist("selected_ids")
+    offer_pokemon_selections = [json.loads(item) for item in offer_pokemon_selections_json]
+    new_selections_json = request.form.getlist("requester_pokemon_ids")
+    new_selections = [json.loads(item) for item in new_selections_json]
+    for new_id in new_selections:
+        if new_id not in offer_pokemon_selections:
+            offer_pokemon_selections.append(new_id)
     requester_id = session["user_id"]
     target = handle_none(pokemon.get_pokemon_by_id(target_pokemon_id))
     offer_pokemon = []
-    for offer_id in offer_pokemon_ids:
-        offer = handle_none(pokemon.get_pokemon_by_id(offer_id))
+    for offer_selection in offer_pokemon_selections:
+        offer = handle_none(pokemon.get_pokemon_by_id(offer_selection["id"]))
         check_access(offer["owner_id"])
         offer_pokemon.append(offer)
 
@@ -142,20 +148,55 @@ def submit_trade():
     flash("Trade proposal successfully submitted!", "success")
     return redirect("/my_trades")
 
-@app.route("/trading/make_offer/<int:pokemon_id>")
-def trade_view(pokemon_id):
+@app.route("/trading/make_offer/<int:pokemon_id>/", methods = ["GET", "POST"])
+@app.route("/trading/make_offer/<int:pokemon_id>/page/<int:page>", methods = ["GET", "POST"])
+def trade_view(pokemon_id, page=1):
     require_login()
+    if request.method == "POST":
+        check_csrf()
     requester_id = session["user_id"]
+    selections_json = request.form.getlist("selected_ids")
+    selections = [json.loads(item) for item in selections_json]
+    new_selections_json = request.form.getlist("requester_pokemon_ids")
+    new_selections = [json.loads(item) for item in new_selections_json]
+    id_set = [item["id"] for item in selections]
+    filtered = []
+    for item in selections:
+        if item["page"] != page:
+            filtered.append(item)
+        if item in new_selections:
+            filtered.append(item)
+    selected_ids = filtered
+    for new_id in new_selections:
+        if new_id not in selected_ids:
+            offer = handle_none(pokemon.get_pokemon_by_id(new_id["id"]))
+            check_access(offer["owner_id"])
+            selected_ids.append(new_id)
     requested_pokemon = handle_none(pokemon.get_pokemon_by_id(pokemon_id))
     if requested_pokemon["owner_id"] == requester_id:
         abort(403)
     _, pokemon_status = pokemon.get_pokemon_status(pokemon_id)
     if pokemon_status != "Listattu":
         abort(404)
+    page_size = 9
+    pokemon_count = users.get_my_pokemon_count(requester_id)
+    page_count = max(math.ceil(pokemon_count /  page_size), 1)
 
-    # TODO: checkboxes to work with multi-page layout (e.g. include pokemon from page 1 and 2 in the offer)
-    requester_pokemon = users.get_my_pokemon(requester_id, 1, 100)
-    return render_template("create_proposal.html", requested_pokemon=requested_pokemon, requester_pokemon=requester_pokemon)
+    if page < 1:
+        return redirect(f"/trading/make_offer/{pokemon_id}/page/1")
+    if page > page_count:
+        return redirect(f"/trading/make_offer/{pokemon_id}/page/" + str(page_count))
+
+    requester_pokemon = users.get_my_pokemon(requester_id, page, page_size)
+    return render_template(
+        "create_proposal.html",
+        requested_pokemon=requested_pokemon,
+        requester_pokemon=requester_pokemon,
+        page=page,
+        page_count=page_count,
+        selected_ids=selected_ids,
+        id_set=id_set
+    )
 
 @app.route("/trading/")
 @app.route("/trading/<int:page>")

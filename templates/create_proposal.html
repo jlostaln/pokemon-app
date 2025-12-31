@@ -5,6 +5,11 @@
 {% block content %}
 <h2>Make an offer</h2>
 <form action="/submit_request" method="POST">
+
+  {% for selected_id in selected_ids %}
+    <input type="hidden" name="selected_ids" value='{{ selected_id | tojson }}'>
+  {% endfor %}
+
   <button type="submit">Send offer</button>
 
   <hr>
@@ -36,6 +41,32 @@
   <hr>
 
   <h3>Your Pokémon</h3>
+  <p>
+  {% if page > 1 %}
+    <button
+      type="submit"
+      formmethod="POST"
+      formaction="/trading/make_offer/{{ requested_pokemon.id }}/page/{{ page - 1 }}"
+      class="link-button">
+      &lt;&lt;
+    </button>
+  {% else %}
+    <span style="visibility:hidden">&lt;&lt;</span>
+  {% endif %}
+
+  Page {{ page }}/{{ page_count }}
+
+  {% if page < page_count %}
+    <button
+      type="submit"
+      formmethod="POST"
+      formaction="/trading/make_offer/{{ requested_pokemon.id }}/page/{{ page + 1 }}"
+      class="link-button">
+      &gt;&gt;
+    </button>
+  {% endif %}
+  </p>
+
   <div class="pokemon-container">
     {% for pokemon in requester_pokemon %}
     <div class="pokemon">
@@ -54,7 +85,10 @@
         {% endif %}
         <li>Type: {{ pokemon.types }}</li>
         <label>
-        <input type="checkbox" name="requester_pokemon_ids" value="{{ pokemon.id }}">
+          <input
+            type="checkbox"
+            name="requester_pokemon_ids"
+            value='{{ {"page": page, "id": pokemon.id} | tojson }}' {% if pokemon.id in id_set %}checked{% endif %}>
         Include Pokémon in offer
       </label>
       </ul>

@@ -21,6 +21,27 @@ a:visited {
   color: #A35E14;
 }
 
+.link-button {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  font: inherit;
+  color: #CC7A1A;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.link-button:hover {
+  color: #E8921F;
+  text-decoration: underline;
+}
+
+.link-button:visited {
+  color: #A35E14;
+}
+
 .info {
   border: 1px solid black;
   margin: 1em;
