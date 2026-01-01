@@ -12,7 +12,7 @@
   {% else %}
   <h3>{{ pokemon.name }}</h3>
   {% endif %}
-  <img src="{{ pokemon.sprite }}" alt="{{ pokemon.name }} sprite">
+  <img src="/pokemon_sprite/{{ pokemon.id }}" alt="{{ pokemon.name }} sprite">
   <br />
   <p>Name: {{ pokemon.name }}</p>
   <form action="/my_pokemon/update/{{ pokemon.id }}" method="POST">

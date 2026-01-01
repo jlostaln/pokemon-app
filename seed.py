@@ -1,6 +1,7 @@
 import random
 import sqlite3
 import users
+import urllib.request
 from app import app
 
 # Test config
@@ -10,6 +11,9 @@ TYPES = ["fire", "water", "grass", "electric", "psychic", "normal", "rock", "gro
 STATUS_VALUES = ["Listed for trading"]
 STATS = ["hp", "attack", "defense", "special-attack", "special-defence", "speed"]
 TRADE_COUNT = 10**5
+PIKACHU_URL = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png"
+with urllib.request.urlopen(PIKACHU_URL) as response:
+    pikachu_sprite = response.read()
 
 db = sqlite3.connect("database.db")
 
@@ -38,14 +42,14 @@ for i in range(1, USER_COUNT + 1):
 print("Inserting Pokémon...")
 for i in range(1, POKEMON_COUNT + 1):
     owner_id = random.randint(1, USER_COUNT)
-    name = f"pokemon{i}"
-    nickname = f"lemppari{i}"
+    name = f"pikachu"
+    nickname = f"pika{i}"
     height = i
     weight = i
     base_exp = i
     next_evo = "next"
     flavor = f"Flavor text {i}"
-    sprite = ""
+    sprite = pikachu_sprite
 
     db.execute('''
         INSERT INTO pokemon (name, owner_id, nickname, height, weight, base_experience,

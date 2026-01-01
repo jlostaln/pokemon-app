@@ -1,10 +1,11 @@
+import urllib.request
 import math
 import time
 from datetime import datetime
 import secrets
 import sqlite3
 from flask import Flask
-from flask import render_template, request, redirect, session, abort, flash, g
+from flask import render_template, request, redirect, session, abort, flash, g, make_response
 import users
 import config
 import db
@@ -43,6 +44,15 @@ def index():
     if "user_id" in session:
         return redirect("/my_pokemon/stats")
     return render_template("index.html")
+
+@app.route("/pokemon_sprite/<int:pokemon_id>")
+def show_image(pokemon_id):
+    require_login()
+    pokemon_sprite = handle_none(pokemon.get_pokemon_sprite(pokemon_id))
+    response = make_response(bytes(pokemon_sprite))
+    response.headers.set("Content-Type", "image/png")
+    return response
+
 
 @app.route("/trade/<int:trade_id>/accept", methods=["POST"])
 def accept_trade(trade_id):
@@ -353,7 +363,10 @@ def capture_pokemon(pokemon_name):
         base_experience = request.form["base_experience"]
         next_evolution = request.form["next_evolution"]
         flavor_text = request.form["flavor_text"]
-        sprite = request.form["sprite"]
+        sprite_url = request.form["sprite"]
+        with urllib.request.urlopen(sprite_url) as response:
+            sprite = response.read()
+
         stats = json.loads(request.form["stats"])
         is_base_stat = 1
         types = json.loads(request.form["types"])

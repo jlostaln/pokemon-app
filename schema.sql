@@ -1,9 +1,4 @@
-CREATE TABLE IF NOT EXISTS users (
-  id INTEGER PRIMARY KEY,
-  username TEXT UNIQUE,
-  password_hash TEXT
-);
-
+DROP TABLE IF EXISTS users;
 DROP TABLE IF EXISTS pokemon;
 DROP TABLE IF EXISTS pokemon_stats;
 DROP TABLE IF EXISTS pokemon_types;
@@ -12,6 +7,12 @@ DROP TABLE IF EXISTS status;
 DROP TABLE IF EXISTS trades;
 DROP TABLE IF EXISTS trade_pokemon;
 DROP TABLE IF EXISTS trade_history;
+
+CREATE TABLE IF NOT EXISTS users (
+  id INTEGER PRIMARY KEY,
+  username TEXT UNIQUE,
+  password_hash TEXT
+);
 
 CREATE TABLE pokemon (
   id INTEGER PRIMARY KEY,
@@ -23,7 +24,7 @@ CREATE TABLE pokemon (
   base_experience INTEGER,
   next_evolution TEXT,
   flavor_text TEXT,
-  sprite TEXT
+  sprite BLOB
 );
 
 CREATE TABLE pokemon_stats (

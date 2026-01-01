@@ -23,7 +23,7 @@
         {% else %}
         <h3>{{ requested_pokemon.name }}</h3>
         {% endif %}
-      <img src="{{ requested_pokemon.sprite }}" alt="{{ requested_pokemon.name }} sprite">
+      <img src="/pokemon_sprite/{{ requested_pokemon.id }}" alt="{{ requested_pokemon.name }} sprite">
       <br />
 
       <ul>
@@ -75,7 +75,7 @@
       {% else %}
       <h3>{{ pokemon.name }}</h3>
       {% endif %}
-      <img src="{{ pokemon.sprite }}" alt="{{ pokemon.name }} sprite">
+      <img src="/pokemon_sprite/{{ pokemon.id }}" alt="{{ pokemon.name }} sprite">
       <br />
 
       <ul>

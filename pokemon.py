@@ -5,7 +5,6 @@ def get_pokemon_by_id(pokemon_id):
                     pokemon.name,
                     pokemon.owner_id,
                     pokemon.flavor_text,
-                    pokemon.sprite,
                     pokemon.nickname,
                     pokemon.next_evolution,
                     GROUP_CONCAT(pokemon_types.type, ', ') as types
@@ -21,6 +20,11 @@ def get_pokemon_stats(pokemon_id):
     sql = "SELECT id, stat, value, is_base_stat FROM pokemon_stats WHERE pokemon_id = ?"
     stats = db.query(sql, [pokemon_id])
     return stats
+
+def get_pokemon_sprite(pokemon_id):
+    sql = "SELECT sprite FROM pokemon WHERE id = ?"
+    result = db.query(sql, [pokemon_id])
+    return result[0][0] if result else None
 
 def get_listed_pokemon_count(filter=None, owner_id=None):
     sql = '''SELECT count(*)
@@ -54,7 +58,6 @@ def get_listed_pokemon(page, page_size, filter=None, owner_id=None):
                     pokemon.name,
                     pokemon.nickname,
                     pokemon.flavor_text,
-                    pokemon.sprite,
                     GROUP_CONCAT(pokemon_types.type, ', ') as types
             FROM pokemon
             JOIN users

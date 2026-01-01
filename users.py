@@ -45,7 +45,6 @@ def get_my_pokemon(owner_id, page, page_size, filter=None):
                     pokemon.name,
                     pokemon.nickname,
                     pokemon.flavor_text,
-                    pokemon.sprite,
                     GROUP_CONCAT(pokemon_types.type, ', ') as types,
                     pokemon_status.value as status
             FROM pokemon
@@ -84,7 +83,6 @@ def get_my_pokemon_by_type(owner_id, pokemon_type):
                     pokemon.name,
                     pokemon.nickname,
                     pokemon.flavor_text,
-                    pokemon.sprite,
                     GROUP_CONCAT(pokemon_types.type, ', ') as types,
                     pokemon_status.value as status
             FROM pokemon
