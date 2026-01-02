@@ -6,11 +6,11 @@ from app import app
 
 # Test config
 USER_COUNT = 1000
-POKEMON_COUNT = 10**5
+POKEMON_COUNT = 10**6
 TYPES = ["fire", "water", "grass", "electric", "psychic", "normal", "rock", "ground", "bug", "poison"]
 STATUS_VALUES = ["Listed for trading"]
 STATS = ["hp", "attack", "defense", "special-attack", "special-defence", "speed"]
-TRADE_COUNT = 10**5
+TRADE_COUNT = 10**6
 PIKACHU_URL = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png"
 with urllib.request.urlopen(PIKACHU_URL) as response:
     pikachu_sprite = response.read()
@@ -81,6 +81,11 @@ for pokemon_id in range(1, POKEMON_COUNT + 1):
         INSERT INTO pokemon_status (pokemon_id, value)
         VALUES (?, ?)
     ''', [pokemon_id, status])
+
+    db.execute('''
+        INSERT INTO listed_pokemon (id)
+        VALUES (?)
+    ''', [pokemon_id])
 
 print("Inserting trades...")
 for i in range(1, TRADE_COUNT + 1):

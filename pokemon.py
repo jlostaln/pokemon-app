@@ -26,48 +26,24 @@ def get_pokemon_sprite(pokemon_id):
     result = db.query(sql, [pokemon_id])
     return result[0][0] if result else None
 
-def get_listed_pokemon_count(filter=None, owner_id=None):
-    sql = '''SELECT count(*)
-            FROM pokemon
-            WHERE pokemon.id in ( SELECT pokemon_id
-                                FROM pokemon_status
-                                WHERE value = ?)'''
-    params = ['Listed for trading']
-
-    if filter:
-        sql += '''
-            AND (pokemon.name LIKE ?
-                    OR EXISTS ( SELECT 1
-                                FROM pokemon_types
-                                WHERE pokemon_types.pokemon_id = pokemon.id
-                                AND pokemon_types.type LIKE ?))'''
-        like = "%" + filter + "%"
-        params.extend([like, like])
-
-    if owner_id:
-        sql += '''AND pokemon.owner_id != ?'''
-        params.append(owner_id)
-
-    result = db.query(sql, params)[0][0]
-    return result
-
 def get_listed_pokemon(page, page_size, filter=None, owner_id=None):
-    sql = '''SELECT pokemon.id,
+    sql = '''SELECT listed_pokemon.id as listed_pokemon_id,
+                    pokemon.id,
                     pokemon.owner_id,
                     users.username,
                     pokemon.name,
                     pokemon.nickname,
                     pokemon.flavor_text,
                     GROUP_CONCAT(pokemon_types.type, ', ') as types
-            FROM pokemon
+            FROM listed_pokemon
+            JOIN pokemon
+                    ON pokemon.id = listed_pokemon.id
             JOIN users
                     ON users.id = pokemon.owner_id
             LEFT JOIN pokemon_types
                     ON pokemon.id = pokemon_types.pokemon_id
-            WHERE pokemon.id in ( SELECT pokemon_id
-                                FROM pokemon_status
-                                WHERE value = ?)'''
-    params = ['Listed for trading']
+            WHERE 1 = 1'''
+    params = []
 
     if filter:
         sql += '''
@@ -80,7 +56,8 @@ def get_listed_pokemon(page, page_size, filter=None, owner_id=None):
         params.extend([like, like])
 
     if owner_id:
-        sql += '''AND pokemon.owner_id != ?'''
+        sql += '''
+            AND pokemon.owner_id != ?'''
         params.append(owner_id)
 
     sql += '''
@@ -88,12 +65,16 @@ def get_listed_pokemon(page, page_size, filter=None, owner_id=None):
             ORDER BY pokemon.id DESC
             LIMIT ? OFFSET ?'''
 
-    limit = page_size
+    limit = page_size + 1
     offset = page_size * (page - 1)
     params.extend([limit, offset])
 
     result = db.query(sql, params)
-    return result
+    has_next = len(result) > page_size
+    result = result[:page_size]
+
+    return result, has_next
+
 
 def set_nickname(nickname, pokemon_id):
     sql = "UPDATE pokemon SET nickname = ? WHERE id = ?"
@@ -134,6 +115,21 @@ def get_all_statuses():
 def set_pokemon_status(status, status_id):
     sql = "UPDATE pokemon_status SET value = ? WHERE id = ?"
     db.execute(sql, [status, status_id])
+
+def update_listed_pokemon(status, pokemon_id):
+    sql = "SELECT id FROM listed_pokemon WHERE id = ?"
+    result = db.query(sql, [pokemon_id])
+    id = result[0][0] if result else None
+
+    if id:
+        if status != "Listed for trading":
+            sql = "DELETE FROM listed_pokemon WHERE id = ?"
+            db.execute(sql, [id])
+    else:
+        if status == "Listed for trading":
+            sql = "INSERT INTO listed_pokemon (id) VALUES (?)"
+            db.execute(sql, [pokemon_id])
+
 
 def get_pokemon_status(pokemon_id):
     sql = "SELECT id, value FROM pokemon_status WHERE pokemon_id = ?"

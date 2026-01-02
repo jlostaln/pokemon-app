@@ -3,6 +3,7 @@ DROP TABLE IF EXISTS pokemon;
 DROP TABLE IF EXISTS pokemon_stats;
 DROP TABLE IF EXISTS pokemon_types;
 DROP TABLE IF EXISTS pokemon_status;
+DROP TABLE IF EXISTS listed_pokemon;
 DROP TABLE IF EXISTS status;
 DROP TABLE IF EXISTS trades;
 DROP TABLE IF EXISTS trade_pokemon;
@@ -50,6 +51,10 @@ CREATE TABLE pokemon_status (
   id INTEGER PRIMARY KEY,
   pokemon_id INTEGER REFERENCES pokemon(id) ON DELETE CASCADE,
   value TEXT
+);
+
+CREATE TABLE listed_pokemon (
+  id INTEGER PRIMARY KEY REFERENCES pokemon(id) ON DELETE CASCADE
 );
 
 CREATE TABLE trades (

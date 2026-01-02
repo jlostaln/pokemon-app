@@ -9,7 +9,7 @@
     <label for="query">Keyword</label>:
     <input type="text" name="query" id="query" value="{{ query if query }}" placeholder="Name or type">
     <label>
-      <input type="checkbox" name="exclude_owner" value="1" {% if exclude_owner %} checked {% endif %}>
+      <input type="checkbox" name="exclude_owner" value="True" {% if exclude_owner %} checked {% endif %}>
       Exclude your own listings
     </label>
   </p>
@@ -19,13 +19,13 @@
 <hr />
 <p>
   {% if page > 1 %}
-  <a href="/trading/{{ page - 1 }}{% if query %}?query={{ query }}{% endif %}">&lt;&lt;</a>
+<a href="/trading/{{ page - 1 }}?{% if query %}query={{ query }}&{% endif %}{% if exclude_owner %}exclude_owner={{ exclude_owner }}{% endif %}">&lt;&lt;</a>
   {% else %}
   <span style="visibility:hidden">&lt;&lt;</span>
   {% endif %}
-  Page {{ page }}/{{ page_count }}
-  {% if page < page_count %}
-  <a href="/trading/{{ page + 1 }}{% if query %}?query={{ query }}{% endif %}">&gt;&gt;</a>
+  Page {{ page }}
+  {% if has_next %}
+  <a href="/trading/{{ page + 1 }}?{% if query %}query={{ query }}&{% endif %}{% if exclude_owner %}exclude_owner={{ exclude_owner }}{% endif %}">&gt;&gt;</a>
   {% endif %}
 </p>
 

@@ -212,20 +212,17 @@ def view_trade_listings(page=1):
     query = request.args.get("query")
     exclude_owner = request.args.get("exclude_owner")
     page_size = 9
-    pokemon_count = pokemon.get_listed_pokemon_count(query, exclude_owner)
-    page_count = max(math.ceil(pokemon_count /  page_size), 1)
-
-    if page < 1:
-        return redirect("/trading/1")
-    if page > page_count:
-        return redirect("/trading/" + str(page_count))
-
     owner_to_excluded = None
     if exclude_owner:
         owner_to_excluded = session["user_id"]
-    result = pokemon.get_listed_pokemon(page, page_size, query, owner_to_excluded)
+    result, has_next = pokemon.get_listed_pokemon(page, page_size, query, owner_to_excluded)
 
-    return render_template("/trading.html", pokemons=result, query=query, exclude_owner=exclude_owner, page=page, page_count=page_count)
+    if page < 1:
+        return redirect("/trading/1")
+    if page > 1 and not result and not has_next:
+        return redirect(f"/trading/{page - 1}")
+
+    return render_template("/trading.html", pokemons=result, query=query, exclude_owner=exclude_owner, page=page, has_next=has_next)
 
 @app.route("/my_pokemon/")
 @app.route("/my_pokemon/<int:page>")
@@ -267,6 +264,7 @@ def change_status(pokemon_id):
     if status == pokemon_status:
         return redirect(f"/my_pokemon/{page}?query={query}")
     pokemon.set_pokemon_status(status, status_id)
+    pokemon.update_listed_pokemon(status, pokemon_id)
     return redirect(f"/my_pokemon/{page}?query={query}")
 
 @app.route("/my_pokemon/stats/<string:pokemon_type>")
