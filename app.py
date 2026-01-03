@@ -139,10 +139,17 @@ def submit_trade():
     requester_id = session["user_id"]
     target = handle_none(pokemon.get_pokemon_by_id(target_pokemon_id))
     offer_pokemon = []
+    pokemon_in_other_offers = []
     for offer_selection in offer_pokemon_selections:
         offer = handle_none(pokemon.get_pokemon_by_id(offer_selection["id"]))
         check_access(offer["owner_id"])
+        in_other_offer = trades.get_pokemon_in_pending_trade(offer["id"])
+        if in_other_offer:
+            pokemon_in_other_offers.append(offer["name"])
         offer_pokemon.append(offer)
+    if pokemon_in_other_offers:
+        flash(f"Your pokémon {pokemon_in_other_offers} are part of other pending trades. A completed trade involving these pokémon will cause the other trades to be automatically rejected", "info")
+
 
     try:
         trades.add_trade_pending(requester_id, target["owner_id"])
@@ -180,6 +187,9 @@ def trade_view(pokemon_id, page=1):
             check_access(offer["owner_id"])
             selected_ids.append(new_id)
     requested_pokemon = handle_none(pokemon.get_pokemon_by_id(pokemon_id))
+    in_other_offers = trades.get_pokemon_in_pending_trade(pokemon_id)
+    if in_other_offers:
+        flash(f"Target pokémon {requested_pokemon['name']} already part of another pending trade. This offer will be automatically rejected if any of the other offers get accepted", "info")
     if requested_pokemon["owner_id"] == requester_id:
         abort(403)
     _, pokemon_status = pokemon.get_pokemon_status(pokemon_id)

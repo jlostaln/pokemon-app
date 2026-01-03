@@ -69,6 +69,18 @@ def get_user_trades(user_id, page, page_size, filter=None):
 
     return db.query(sql, params)
 
+def get_pokemon_in_pending_trade(pokemon_id):
+    sql = '''SELECT 1
+            FROM trades
+            JOIN trade_pokemon
+                    ON trade_pokemon.trade_id = trades.id
+            WHERE trade_pokemon.pokemon_id = ?
+            AND trades.status = 'pending'
+            '''
+    result = db.query(sql, [pokemon_id])
+    return result[0] if result else None
+
+
 def swap_owners(trade_id, requester_id, responder_id):
     sql = '''UPDATE pokemon SET owner_id = ?
             WHERE id IN (SELECT pokemon_id
@@ -84,6 +96,23 @@ def swap_owners(trade_id, requester_id, responder_id):
                         AND side = 'requester')'''
     db.execute(sql, [responder_id, trade_id])
 
+def cleanup_expired_trades(trade_id):
+    sql = '''SELECT DISTINCT expired.trade_id
+            FROM trade_pokemon swapped
+            JOIN trade_pokemon expired
+                    ON swapped.pokemon_id = expired.pokemon_id
+            JOIN trades
+                    ON trades.id = expired.trade_id
+            WHERE swapped.trade_id = ?
+            AND expired.trade_id != swapped.trade_id
+            AND trades.status = 'pending'
+    '''
+    result = db.query(sql, [trade_id])
+
+    for expired_trade in result:
+        reject_trade(expired_trade["trade_id"])
+
+
 def set_trade_status(trade_id, status):
     sql = "UPDATE trades SET status = ? WHERE id = ?"
     db.execute(sql, [status, trade_id])
@@ -94,6 +123,7 @@ def accept_trade(trade_id, requester_id, responder_id):
     swap_owners(trade_id, requester_id, responder_id)
     set_trade_status(trade_id, "completed")
     add_trade_history(trade_id, "completed")
+    cleanup_expired_trades(trade_id)
 
 def reject_trade(trade_id):
     set_trade_status(trade_id, "rejected")
