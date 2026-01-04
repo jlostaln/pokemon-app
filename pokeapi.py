@@ -20,7 +20,7 @@ class PokeApi:
 
             return json.loads(data)
         except Exception as e:
-            print(f"VIRHE kutsussa {url}: {e}")
+            print(f"ERROR in API call {url}: {e}")
             return None
 
 

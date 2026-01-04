@@ -100,14 +100,7 @@ def get_my_pokemon_by_type(owner_id, pokemon_type):
     result = db.query(sql, [owner_id, pokemon_type])
     return result
 
-def get_pokemon_count(owner_id):
-    sql = '''SELECT count(*) as total_count
-            FROM pokemon
-            WHERE pokemon.owner_id = ?'''
-    result = db.query(sql, [owner_id])
-    return result[0] if result else None
-
-def get_pokemon_count_by_type(owner_id):
+def get_my_pokemon_count_by_type(owner_id):
     sql = '''SELECT pokemon_types.type,
                     count(*) as type_count
             FROM pokemon

@@ -6,14 +6,21 @@
 <h2>My Statistics</h2>
 
 <div class="stats">
-  <p>You own {{ count.total_count }} Pokémon.</p>
-  {% if count.total_count > 0 %}
+  <p>You own {{ count }} Pokémon.</p>
+  {% if count > 0 %}
   <p>Pokémon count by type:</p>
   <ul>
     {% for type in count_by_type %}
       <li><a href="/my_pokemon/?query={{ type.type }}">{{ type.type }}</a>: {{ type.type_count}}</li>
     {% endfor %}
   </ul>
+  {% endif %}
+  {% if pending_count > 1 %}
+  <p> You have <a href="/my_trades/?query=pending">{{ pending_count }} </a>pending trades.</p>
+  {% elif pending_count == 1 %}
+  <p> You have <a href="/my_trades/?query=pending">{{ pending_count }} </a>pending trade.</p>
+  {% else %}
+  <p> You have no pending trades.</p>
   {% endif %}
 </div>
 {% endblock %}

@@ -36,6 +36,15 @@ def get_user_trade_count(user_id, filter=None):
 
     return db.query(sql, params)[0][0]
 
+def get_user_pending_trade_count(user_id):
+    sql = '''SELECT count(*)
+            FROM trades
+            WHERE (trades.requester_id = ?
+                    OR trades.responder_id = ?)
+            AND trades.status = 'pending'
+            '''
+    return db.query(sql, [user_id, user_id])[0][0]
+
 def get_user_trades(user_id, page, page_size, filter=None):
     sql = '''SELECT trades.id as trade_id,
                     trades.requester_id,

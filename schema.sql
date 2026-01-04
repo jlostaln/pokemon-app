@@ -95,6 +95,8 @@ CREATE INDEX idx_pokemon_stats_pokemon_id ON pokemon_stats(pokemon_id);
 CREATE INDEX idx_trades_requester_id ON trades(requester_id);
 CREATE INDEX idx_trades_responder_id ON trades(responder_id);
 CREATE INDEX idx_trades_status ON trades(status);
+CREATE INDEX idx_trades_requester_status ON trades(requester_id, status);
+CREATE INDEX idx_trades_responder_status ON trades(responder_id, status);
 
 CREATE INDEX idx_trade_pokemon_trade_id ON trade_pokemon(trade_id);
 CREATE INDEX idx_trade_pokemon_pokemon_id ON trade_pokemon(pokemon_id);

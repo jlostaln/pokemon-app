@@ -148,8 +148,8 @@ def submit_trade():
             pokemon_in_other_offers.append(offer["name"])
         offer_pokemon.append(offer)
     if pokemon_in_other_offers:
-        flash(f"Your pokémon {pokemon_in_other_offers} are part of other pending trades. A completed trade involving these pokémon will cause the other trades to be automatically rejected", "info")
-
+        names = ", ".join(pokemon_in_other_offers)
+        flash(f"The following Pokémon are involved in other pending trades: {names}. If this trade gets completed, those pending trades will be automatically rejected.", "info")
 
     try:
         trades.add_trade_pending(requester_id, target["owner_id"])
@@ -277,21 +277,14 @@ def change_status(pokemon_id):
     pokemon.update_listed_pokemon(status, pokemon_id)
     return redirect(f"/my_pokemon/{page}?query={query}")
 
-@app.route("/my_pokemon/stats/<string:pokemon_type>")
-def my_pokemon_by_type(pokemon_type):
-    require_login()
-    owner_id = session["user_id"]
-    result = users.get_my_pokemon_by_type(owner_id, pokemon_type)
-    statuses = pokemon.get_all_statuses()
-    return render_template("/my_pokemon.html", pokemons=result, statuses=statuses, query=pokemon_type)
-
 @app.route("/my_pokemon/stats/")
 def my_pokemon_stats():
     require_login()
     owner_id = session["user_id"]
-    count = handle_none(users.get_pokemon_count(owner_id))
-    count_by_type = users.get_pokemon_count_by_type(owner_id)
-    return render_template("/my_stats.html", count=count, count_by_type=count_by_type)
+    count = users.get_my_pokemon_count(owner_id)
+    count_by_type = users.get_my_pokemon_count_by_type(owner_id)
+    pending_count = trades.get_user_pending_trade_count(owner_id)
+    return render_template("/my_stats.html", count=count, count_by_type=count_by_type, pending_count=pending_count)
 
 @app.route("/my_pokemon/edit_pokemon/<int:pokemon_id>")
 def edit_pokemon(pokemon_id):
@@ -392,7 +385,7 @@ def capture_pokemon(pokemon_name):
             pokemon.add_pokemon_status(pokemon_id)
 
         except Exception as e:
-            return f"VIRHE: {e}"
+            return f"ERROR: {e}"
 
         flash(f"{pokemon_name.capitalize()} successfully captured! ({datetime.now().strftime('%H:%M:%S')})", "success")
     else:
