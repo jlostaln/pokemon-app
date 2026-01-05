@@ -7,8 +7,8 @@
 
 <form action="/my_trades/" method="get">
   <p>
-    <label for="query">Trade status (pending | rejected | completed)</label>:
-    <input type="text" name="query" id="query" value="{{ query if query }}" placeholder="status LIKE...">
+    <label for="query">Trade status</label>:
+    <input type="text" style="width: 200px" name="query" id="query" value="{{ query if query }}" placeholder="pending | rejected | completed">
   </p>
   <input type="submit" value="Filter">
 </form>
@@ -30,10 +30,6 @@
 {% for trade_id, trade_rows in transactions|groupby("trade_id")|reverse %}
 <h3>Trade {{ trade_id }}</h3>
 <p>Status: {{ trade_rows[0].status }}</p>
-<p>
-  Requester: {{ trade_rows[0].requester_id }} |
-  Responder: {{ trade_rows[0].responder_id }}
-</p>
 <p>
   {% if session.user_id == trade_rows[0].requester_id %}
     You are the requester in this swap.

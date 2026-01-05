@@ -88,7 +88,6 @@ CREATE INDEX idx_pokemon_types_pokemon_id ON pokemon_types(pokemon_id);
 CREATE INDEX idx_pokemon_types_type ON pokemon_types(type);
 CREATE INDEX idx_pokemon_types_pokemon_id_type ON pokemon_types(pokemon_id, type);
 
-
 CREATE INDEX idx_pokemon_status_pokemon_id ON pokemon_status(pokemon_id);
 CREATE INDEX idx_pokemon_status_value ON pokemon_status(value);
 
