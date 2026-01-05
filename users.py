@@ -104,7 +104,7 @@ def get_my_pokemon_count_by_type(owner_id):
     sql = '''SELECT pokemon_types.type,
                     count(*) as type_count
             FROM pokemon
-            LEFT JOIN pokemon_types
+            JOIN pokemon_types
                     ON pokemon.id = pokemon_types.pokemon_id
             WHERE pokemon.owner_id = ?
             GROUP BY pokemon_types.type
