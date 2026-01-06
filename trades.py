@@ -22,16 +22,16 @@ def get_trade(trade_id):
     trade = db.query(sql, [trade_id])
     return trade[0] if trade else None
 
-def get_user_trade_count(user_id, filter=None):
+def get_user_trade_count(user_id, query=None):
     sql = '''SELECT count(*)
             FROM trades
             WHERE (trades.requester_id = ?
                     OR trades.responder_id = ?)'''
     params = [user_id, user_id]
 
-    if filter:
+    if query:
         sql += '''AND trades.status LIKE ?'''
-        like = "%" + filter + "%"
+        like = "%" + query + "%"
         params.extend([like])
 
     return db.query(sql, params)[0][0]
@@ -51,7 +51,7 @@ def get_user_pending_trade_count(user_id):
     return db.query(sql, [user_id, user_id])[0][0]
 
 
-def get_user_trades(user_id, page, page_size, filter=None):
+def get_user_trades(user_id, page, page_size, query=None):
     sql = '''SELECT trades.id as trade_id,
                     trades.requester_id,
                     trades.responder_id,
@@ -68,9 +68,9 @@ def get_user_trades(user_id, page, page_size, filter=None):
                                 WHERE (trades.requester_id = ? OR trades.responder_id = ?)'''
     params = [user_id, user_id]
 
-    if filter:
+    if query:
         sql += '''              AND trades.status LIKE ?'''
-        like = "%" + filter + "%"
+        like = "%" + query + "%"
         params.extend([like])
 
     sql += '''

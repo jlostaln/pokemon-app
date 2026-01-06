@@ -17,4 +17,3 @@ class Cache:
         if record:
             return record.value
         return None
-

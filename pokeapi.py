@@ -1,4 +1,5 @@
 import urllib.request
+import urllib.error
 import re
 import json
 import pokecache
@@ -19,7 +20,7 @@ class PokeApi:
                     self.cache.add(url, data)
 
             return json.loads(data)
-        except Exception as e:
+        except (urllib.error.URLError, json.JSONDecodeError) as e:
             print(f"ERROR in API call {url}: {e}")
             return None
 
@@ -27,8 +28,8 @@ class PokeApi:
     def get_pokemon_details(self, name):
         url = self.base_url + "/pokemon/" + name
         pokemon = self.get_data(url)
-
         return pokemon
+
 
     def get_pokemon_additional_info(self, pokemon):
         if pokemon is None:
@@ -54,8 +55,7 @@ class PokeApi:
             if chain["species"]["name"] == name:
                 if chain["evolves_to"]:
                     return chain["evolves_to"][0]["species"]["name"]
-                else:
-                    return None
+                return None
             for evolution in chain["evolves_to"]:
                 result = find_next_evolution(evolution, name)
                 if result:
@@ -65,7 +65,6 @@ class PokeApi:
         name = pokemon["name"]
         next_evolution = find_next_evolution(evolution_chain["chain"], name)
         info["next_evolution"] = next_evolution
-
         return info
 
 
@@ -81,7 +80,6 @@ class PokeApi:
         areas = locations_data["results"]
         next_url = locations_data["next"]
         previous_url = locations_data["previous"]
-
         return areas, next_url, previous_url, url
 
 
@@ -90,6 +88,4 @@ class PokeApi:
         encounters = self.get_data(url)
         if encounters is None:
             return None
-
         return encounters["pokemon_encounters"]
-

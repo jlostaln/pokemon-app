@@ -16,30 +16,29 @@ def check_login(username, password):
     password_hash = result[0]["password_hash"]
     if check_password_hash(password_hash, password):
         return user_id
-    else:
-        return None
+    return None
 
-def get_my_pokemon_count(owner_id, filter=None):
+def get_my_pokemon_count(owner_id, query=None):
     sql = '''SELECT count(*)
             FROM pokemon
             WHERE pokemon.owner_id = ?'''
 
     params = [owner_id]
 
-    if filter:
+    if query:
         sql += '''
             AND (pokemon.name LIKE ?
                     OR EXISTS ( SELECT 1
                                 FROM pokemon_types
                                 WHERE pokemon_types.pokemon_id = pokemon.id
                                 AND pokemon_types.type LIKE ?))'''
-        like = "%" + filter + "%"
+        like = "%" + query + "%"
         params.extend([like, like])
 
     result = db.query(sql, params)[0][0]
     return result
 
-def get_my_pokemon(owner_id, page, page_size, filter=None):
+def get_my_pokemon(owner_id, page, page_size, query=None):
     sql = '''SELECT pokemon.id,
                     pokemon.owner_id,
                     pokemon.name,
@@ -56,14 +55,14 @@ def get_my_pokemon(owner_id, page, page_size, filter=None):
 
     params = [owner_id]
 
-    if filter:
+    if query:
         sql += '''
             AND (pokemon.name LIKE ?
                     OR EXISTS ( SELECT 1
                                 FROM pokemon_types
                                 WHERE pokemon_types.pokemon_id = pokemon.id
                                 AND pokemon_types.type LIKE ?))'''
-        like = "%" + filter + "%"
+        like = "%" + query + "%"
         params.extend([like, like])
 
     sql += '''

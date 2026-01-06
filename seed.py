@@ -1,13 +1,15 @@
 import random
 import sqlite3
-import users
 import urllib.request
+
 from app import app
+import users
 
 # Test config
 USER_COUNT = 1000
 POKEMON_COUNT = 10**6
-TYPES = ["fire", "water", "grass", "electric", "psychic", "normal", "rock", "ground", "bug", "poison"]
+TYPES = ["fire", "water", "grass", "electric", "psychic", "normal",
+         "rock", "ground", "bug", "poison"]
 STATUS_VALUES = ["Listed for trading"]
 STATS = ["hp", "attack", "defense", "special-attack", "special-defence", "speed"]
 TRADE_COUNT = 10**6
@@ -42,7 +44,7 @@ for i in range(1, USER_COUNT + 1):
 print("Inserting Pokémon...")
 for i in range(1, POKEMON_COUNT + 1):
     owner_id = random.randint(1, USER_COUNT)
-    name = f"pikachu"
+    name = "pikachu"
     nickname = f"pika{i}"
     height = i
     weight = i

@@ -4,16 +4,18 @@ import time
 from datetime import datetime
 import secrets
 import sqlite3
+import random
+import json
+
 from flask import Flask
 from flask import render_template, request, redirect, session, abort, flash, g, make_response
+
 import users
 import config
 import db
 import pokemon
 import trades
 import pokeapi
-import random
-import json
 
 app = Flask(__name__)
 
@@ -30,7 +32,7 @@ def check_access(owner_id):
 
 def handle_none(obj):
     if not obj:
-       abort(404)
+        abort(404)
     return obj
 
 def check_csrf():
@@ -122,7 +124,13 @@ def my_trades(page=1):
         return redirect(f"/my_trades/{page_count}")
 
     transactions = trades.get_user_trades(user_id, page, page_size, query)
-    return render_template("my_trades.html", transactions=transactions, query=query, page=page, page_count=page_count)
+    return render_template(
+        "my_trades.html",
+        transactions=transactions,
+        query=query,
+        page=page,
+        page_count=page_count
+    )
 
 @app.route("/submit_request", methods=["POST"])
 def submit_trade():
@@ -149,7 +157,11 @@ def submit_trade():
         offer_pokemon.append(offer)
     if pokemon_in_other_offers:
         names = ", ".join(pokemon_in_other_offers)
-        flash(f"The following Pokémon are involved in other pending trades: {names}. If this trade gets completed, those pending trades will be automatically rejected.", "info")
+        flash(
+            (f"The following Pokémon are involved in other pending trades: {names}. "
+            "If this trade gets completed, those pending trades will be automatically "
+            "rejected."), "info"
+        )
 
     try:
         trades.add_trade_pending(requester_id, target["owner_id"])
@@ -158,8 +170,8 @@ def submit_trade():
         trades.add_pokemon(trade_id, target["id"], target["name"], "responder")
         for offer in offer_pokemon:
             trades.add_pokemon(trade_id, offer["id"], offer["name"], "requester")
-    except Exception as e:
-        flash(f"ERROR: {e}", "error")
+    except sqlite3.Error as e:
+        flash(f"Database error: {e}", "error")
         return redirect("/my_trades")
     flash("Trade proposal successfully submitted!", "success")
     return redirect("/my_trades")
@@ -189,7 +201,11 @@ def trade_view(pokemon_id, page=1):
     requested_pokemon = handle_none(pokemon.get_pokemon_by_id(pokemon_id))
     in_other_offers = trades.get_pokemon_in_pending_trade(pokemon_id)
     if in_other_offers:
-        flash(f"Target pokémon {requested_pokemon['name']} already part of another pending trade. This offer will be automatically rejected if any of the other offers get accepted", "info")
+        flash(
+            (f"Target pokémon {requested_pokemon['name']} already part of another "
+            "pending trade. This offer will be automatically rejected if any of the "
+            "other offers get accepted"), "info"
+        )
     if requested_pokemon["owner_id"] == requester_id:
         abort(403)
     _, pokemon_status = pokemon.get_pokemon_status(pokemon_id)
@@ -232,7 +248,14 @@ def view_trade_listings(page=1):
     if page > 1 and not result and not has_next:
         return redirect(f"/trading/{page - 1}")
 
-    return render_template("/trading.html", pokemons=result, query=query, exclude_owner=exclude_owner, page=page, has_next=has_next)
+    return render_template(
+        "/trading.html",
+        pokemons=result,
+        query=query,
+        exclude_owner=exclude_owner,
+        page=page,
+        has_next=has_next
+    )
 
 @app.route("/my_pokemon/")
 @app.route("/my_pokemon/<int:page>")
@@ -253,7 +276,14 @@ def my_pokemon(page=1):
 
     result = users.get_my_pokemon(owner_id, page, page_size, query)
     statuses = pokemon.get_all_statuses()
-    return render_template("/my_pokemon.html", pokemons=result, statuses=statuses, query=query, page=page, page_count=page_count)
+    return render_template(
+        "/my_pokemon.html",
+        pokemons=result,
+        statuses=statuses,
+        query=query,
+        page=page,
+        page_count=page_count
+    )
 
 @app.route("/my_pokemon/change_status/<int:pokemon_id>", methods=["POST"])
 def change_status(pokemon_id):
@@ -284,7 +314,12 @@ def my_pokemon_stats():
     count = users.get_my_pokemon_count(owner_id)
     count_by_type = users.get_my_pokemon_count_by_type(owner_id)
     pending_count = trades.get_user_pending_trade_count(owner_id)
-    return render_template("/my_stats.html", count=count, count_by_type=count_by_type, pending_count=pending_count)
+    return render_template(
+        "/my_stats.html",
+        count=count,
+        count_by_type=count_by_type,
+        pending_count=pending_count
+    )
 
 @app.route("/my_pokemon/edit_pokemon/<int:pokemon_id>")
 def edit_pokemon(pokemon_id):
@@ -367,41 +402,42 @@ def capture_pokemon(pokemon_name):
         sprite_url = request.form["sprite"]
         with urllib.request.urlopen(sprite_url) as response:
             sprite = response.read()
-
         stats = json.loads(request.form["stats"])
         is_base_stat = 1
         types = json.loads(request.form["types"])
 
         try:
-            pokemon.add_pokemon(name, owner_id, height, weight, base_experience, next_evolution, flavor_text, sprite)
+            pokemon.add_pokemon(name, owner_id, height, weight, base_experience,
+                                next_evolution, flavor_text, sprite)
             pokemon_id = db.last_insert_id()
-
             for stat in stats:
                 pokemon.add_stat(pokemon_id, stat["stat"]["name"], stat["base_stat"], is_base_stat)
-
             for t in types:
                 pokemon.add_type(pokemon_id, t["type"]["name"])
-
             pokemon.add_pokemon_status(pokemon_id)
+        except sqlite3.Error as e:
+            return f"Database error: {e}"
 
-        except Exception as e:
-            return f"ERROR: {e}"
-
-        flash(f"{pokemon_name.capitalize()} successfully captured! ({datetime.now().strftime('%H:%M:%S')})", "success")
+        flash(
+            (f"{pokemon_name.capitalize()} successfully captured! "
+            f"({datetime.now().strftime('%H:%M:%S')})"),"success"
+        )
     else:
-        flash(f"DARN IT! {pokemon_name.capitalize()} escaped! Try again. ({datetime.now().strftime('%H:%M:%S')})", "error")
+        flash(
+            (f"DARN IT! {pokemon_name.capitalize()} escaped! Try again. "
+            f"({datetime.now().strftime('%H:%M:%S')})"), "error"
+        )
     return redirect(f"/inspect/{pokemon_name}")
 
 @app.route("/inspect/<string:pokemon_name>")
 def inspect(pokemon_name):
     require_login()
-    pokemon = api.get_pokemon_details(pokemon_name)
-    if pokemon is None:
+    wild_pokemon = api.get_pokemon_details(pokemon_name)
+    if wild_pokemon is None:
         return redirect(f'/encounters/{session["current_area"]}')
-    additional_information = api.get_pokemon_additional_info(pokemon)
-    pokemon.update(additional_information)
-    capture_result = session.pop("capture_result", None)
-    return render_template("inspect.html", pokemon=pokemon, capture_result=capture_result)
+    additional_information = api.get_pokemon_additional_info(wild_pokemon)
+    wild_pokemon.update(additional_information)
+    return render_template("inspect.html", pokemon=wild_pokemon)
 
 @app.route("/location-area/")
 def redirect_to_start():
@@ -475,9 +511,8 @@ def login():
             session["csrf_token"] = secrets.token_hex(16)
             flash("You are logged in", "info")
             return redirect("/")
-        else:
-            flash("Wrong username or password", "error")
-            return redirect("/login")
+        flash("Wrong username or password", "error")
+        return redirect("/login")
 
     return redirect("/")
 

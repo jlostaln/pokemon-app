@@ -26,7 +26,7 @@ def get_pokemon_sprite(pokemon_id):
     result = db.query(sql, [pokemon_id])
     return result[0][0] if result else None
 
-def get_listed_pokemon(page, page_size, filter=None, owner_id=None):
+def get_listed_pokemon(page, page_size, query=None, owner_id=None):
     sql = '''SELECT listed_pokemon.id as listed_pokemon_id,
                     pokemon.id,
                     pokemon.owner_id,
@@ -45,14 +45,14 @@ def get_listed_pokemon(page, page_size, filter=None, owner_id=None):
             WHERE 1 = 1'''
     params = []
 
-    if filter:
+    if query:
         sql += '''
             AND (pokemon.name LIKE ?
                     OR EXISTS ( SELECT 1
                                 FROM pokemon_types
                                 WHERE pokemon_types.pokemon_id = pokemon.id
                                 AND pokemon_types.type LIKE ?))'''
-        like = "%" + filter + "%"
+        like = "%" + query + "%"
         params.extend([like, like])
 
     if owner_id:
@@ -93,11 +93,14 @@ def add_type(pokemon_id, type_name):
             VALUES (?, ?)'''
     db.execute(sql, [pokemon_id, type_name])
 
-def add_pokemon(name, owner_id, height, weight, base_experience, next_evolution, flavor_text, sprite):
+def add_pokemon(name, owner_id, height, weight, base_experience,
+                next_evolution, flavor_text, sprite):
 
-    sql = '''INSERT INTO pokemon (name, owner_id, height, weight, base_experience, next_evolution, flavor_text, sprite)
+    sql = '''INSERT INTO pokemon (name, owner_id, height, weight, base_experience,
+                                    next_evolution, flavor_text, sprite)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)'''
-    db.execute(sql, [name, owner_id, height, weight, base_experience, next_evolution, flavor_text, sprite])
+    db.execute(sql, [name, owner_id, height, weight, base_experience,
+                     next_evolution, flavor_text, sprite])
 
 def remove_pokemon(pokemon_id):
     sql = "DELETE FROM pokemon WHERE id = ?"
@@ -119,12 +122,12 @@ def set_pokemon_status(status, status_id):
 def update_listed_pokemon(status, pokemon_id):
     sql = "SELECT id FROM listed_pokemon WHERE id = ?"
     result = db.query(sql, [pokemon_id])
-    id = result[0][0] if result else None
+    id_exists = result[0][0] if result else None
 
-    if id:
+    if id_exists:
         if status != "Listed for trading":
             sql = "DELETE FROM listed_pokemon WHERE id = ?"
-            db.execute(sql, [id])
+            db.execute(sql, [pokemon_id])
     else:
         if status == "Listed for trading":
             sql = "INSERT INTO listed_pokemon (id) VALUES (?)"
