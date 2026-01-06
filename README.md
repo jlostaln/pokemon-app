@@ -7,13 +7,15 @@ Tämä sovellus käyttää PokeAPI-rajapintaa (https://pokeapi.co/docs/v2) tiedo
 * Käyttäjä pystyy luomaan tunnuksen ja kirjautumaan sisään sovellukseen. ✅
 * Käyttäjä pystyy keräämään, muokkaamaan ja poistamaan pokemoneja. ✅
 * Käyttäjä pystyy tutkimaan maailmaa ja etsimään pokemoneja maailmasta. ✅
-* Käyttäjä pystyy kehittämään keräämiään pokemoneja.
-* Käyttäjä näkee sovelluksen muiden käyttäjien keräämät pokemonit.
-* Käyttäjä pystyy etsimään pokemoneja hakusanalla.
-* Sovelluksessa on käyttäjäsivut, jotka näyttävät tilastoja ja käyttäjän keräämät pokemonit. ✅
-* Sovelluksessa on leaderboard, joka listaa käyttäjät ja lajittelee käyttäjät kerättyjen pokemonien perusteella.
-* Käyttäjä pystyy valitsemaan maksimissaan 6 keräämistään pokemoneista, jotka kulkevat pelaajan mukana.
-* Käyttäjä pystyy vaihtamaan pokemoneja toisen käyttäjän kanssa.
+* Käyttäjä pystyy etsimään omistamiaan pokemoneja hakusanalla. ✅
+* Käyttäjä pystyy listaamaan omistamiaan pokemoneja vaihdettavaksi. ✅
+* Käyttäjä näkee sovelluksen muiden käyttäjien listaamat pokemonit. ✅
+* Käyttäjä pystyy etsimään listattuja pokemoneja hakusanalla. ✅
+* Käyttäjä pystyy vaihtamaan pokemoneja toisen käyttäjän kanssa. ✅
+* Käyttäjä pystyy selaamaan omia vaihtokauppojaan. ✅
+* Käyttäjä pystyy suodattamaan omia vaihtokauppojaan hakusanalla. ✅
+* Käyttäjä pystyy perumaan, hylkäämään ja hyväksymään vaihtokauppoja, joissa hän on osallisena. ✅
+* Sovelluksessa on käyttäjäsivut, jotka näyttävät tilastoja käyttäjän keräämistä pokemoneista ja vireillä olevista vaihtokaupoista. ✅
 
 ## Sovelluksen asennus
 
@@ -29,6 +31,17 @@ Luo tietokannan taulut ja lisää alkutiedot:
 $ sqlite3 database.db < schema.sql
 $ sqlite3 database.db < init.sql
 ```
+
+(**Valinnainen**) Jos haluat luoda pohjalle ison määrän dataa (käyttäjiä, pokemoneja, vaihtokauppoja) ja valmiin testikäyttäjän:
+
+```
+$ python3 seed.py
+```
+* Huom. Tämä vaihe **tyhjentään** tietokannan taulut ja alustaa tietokannan isolla määrällä dataa. Tietokantaan luodaan:
+  * iso määrä pikachu-pokemoneja satunnaisilla statistiikoilla. Kaikki näistä ovat listattuja vaihtokaupan kohteeksi.
+  * iso määrä vaihtokauppoja eri statuksilla
+  * valmiin testikäyttäjän (username=test, password=test), jonka tilillä on valmiiksi iso määrä pokemoneja ja vaihtokauppatapahtumia eri statuksilla.
+
 
 Voit käynnistää sovelluksen näin:
 
@@ -59,4 +72,3 @@ https://pokeapi.co/api/v2/pokemon/pikachu
 https://pokeapi.co/api/v2/pokemon-species/25/
 
 https://pokeapi.co/api/v2/evolution-chain/10/
-
