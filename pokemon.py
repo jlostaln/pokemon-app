@@ -40,7 +40,7 @@ def get_listed_pokemon(page, page_size, query=None, owner_id=None):
                     ON pokemon.id = listed_pokemon.id
             JOIN users
                     ON users.id = pokemon.owner_id
-            LEFT JOIN pokemon_types
+            JOIN pokemon_types
                     ON pokemon.id = pokemon_types.pokemon_id
             WHERE 1 = 1'''
     params = []
@@ -52,7 +52,7 @@ def get_listed_pokemon(page, page_size, query=None, owner_id=None):
                                 FROM pokemon_types
                                 WHERE pokemon_types.pokemon_id = pokemon.id
                                 AND pokemon_types.type LIKE ?))'''
-        like = "%" + query + "%"
+        like = query + "%"
         params.extend([like, like])
 
     if owner_id:
